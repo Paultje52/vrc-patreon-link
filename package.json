@@ -1,0 +1,32 @@
+{
+  "devDependencies": {
+    "@types/node": "17.0.5",
+    "typescript": "4.5.4"
+  },
+  "name": "vrc-patreon-link",
+  "description": "Automatically uploads a list of patrons to VRChat everytime a patron joins or leaves, without reuploading the world. For use with https://github.com/Miner28/AvatarImageReader",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "Automatically uploads a list of patrons to VRChat everytime a patron joins or leaves, without reuploading the world. For use with Miner28/AvatarImageReader"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Paultje52/vrc-patreon-link.git"
+  },
+  "keywords": [
+    "vrchat",
+    "vrc",
+    "patreon",
+    "discord"
+  ],
+  "author": "Paultje52",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Paultje52/vrc-patreon-link/issues"
+  },
+  "homepage": "https://github.com/Paultje52/vrc-patreon-link#readme",
+  "dependencies": {
+    "canvas": "2.8.0"
+  }
+}
