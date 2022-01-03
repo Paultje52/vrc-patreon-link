@@ -1,6 +1,7 @@
 # Others
 package-lock.json
 build/*
+cookie.tmp
 
 # Logs
 logs
