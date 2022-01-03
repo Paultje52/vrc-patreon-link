@@ -1,5 +1,13 @@
-import imageEncoder from "./imageEncoder/imageEncoder";
-import { writeFileSync } from "fs";
+import DiscordClient from "./DiscordClient";
 
-let img = imageEncoder("Goodbye world (#Evil programmer)");
-if (img !== null) writeFileSync("test.png", img);
+console.log("Starting VRC-Patreon-Link...");
+require("dotenv").config();
+
+if (!process.env.DISCORD_TOKEN) throw new Error("DISCORD_TOKEN in .env file is not set!");
+let client = new DiscordClient(process.env.DISCORD_TOKEN);
+
+client.on("ready", async () => {
+
+  console.log(`Hello, I'm logged in as ${client.user.tag}!`);
+
+});
