@@ -1,5 +1,6 @@
 # Others
 package-lock.json
+build/*
 
 # Logs
 logs
