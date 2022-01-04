@@ -1,4 +1,4 @@
-import { Client, Role, User } from "discord.js";
+import { Client, User } from "discord.js";
 import type { ClientOptions } from "./VrcPatreonLinkTypes";
 
 export default class DiscordClient extends Client {
@@ -9,7 +9,11 @@ export default class DiscordClient extends Client {
   constructor(options: ClientOptions) {
     super({
       intents: [
-        "GUILD_MEMBERS"
+        "GUILD_MEMBERS",
+        "DIRECT_MESSAGES"
+      ],
+      partials: [
+        "CHANNEL"
       ],
       userAgentSuffix: ["VRC-Patreon-Link"],
 
@@ -46,7 +50,7 @@ export default class DiscordClient extends Client {
     let roles: String[] = [];
     for (let roleId of this.roleIds) {
       let role = await guild.roles.fetch(roleId);
-      
+
       if (!role) console.warn(`Role ${roleId} not found!`);
       else roles.push(role.id);
     }

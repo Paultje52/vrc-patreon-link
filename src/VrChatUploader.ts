@@ -59,8 +59,24 @@ export default class VrChatUploader {
     let failed = false;
 
     try {
-      fileVersion = await this.startFileUpload(headers, md5Hash, imagePath, fileId)
-        .catch((e) => {throw new Error(e)});
+      let fetchedNewFileVersion = await this.startFileUpload(headers, md5Hash, imagePath, fileId)
+        .catch((e) => {
+          console.log(e);
+        });
+
+      // The new version creation somehow failed - Let's delete and try again!
+      if (!fetchedNewFileVersion) {
+        let latestVersion = await this.getLatestFileVersion(headers, fileId)
+          .catch((e) => {throw new Error(e)});
+
+        await this.deleteLatestVersion(headers, fileId, latestVersion)
+          .catch((e) => {throw new Error(e)});
+        
+        return false;
+      }
+      
+      fileVersion = fetchedNewFileVersion;
+
       let uploadUrl = await this.getUploadUrl(headers, fileId, fileVersion)
         .catch((e) => {throw new Error(e)});
       await this.uploadImage(uploadUrl, imagePath, md5Hash, headers)
@@ -206,6 +222,27 @@ export default class VrChatUploader {
     return json.versions[json.versions.length-1].version;
   }
 
+  private async getLatestFileVersion(headers: any, fileId: string): Promise<string> {
+    let res = await fetch(this.baseUrl + `/file/${fileId}`, {
+      headers
+    });
+
+    let json = await res.json();
+    if (res.status !== 200) throw new Error(`Cannot upload image: Failed to start file upload: ${json.error.message}`);
+
+    return json.versions[json.versions.length-1].version;
+  }
+
+  private async deleteLatestVersion(headers: any, fileId: string, latestVersion: string): Promise<void> {
+    let res = await fetch(this.baseUrl + `/file/${fileId}/${latestVersion}`, {
+      headers,
+      method: "DELETE"
+    });
+
+    let json = await res.json();
+    if (res.status !== 200) throw new Error(`Cannot upload image: Failed to start file upload: ${json.error.message}`);
+  }
+
   private async getFilesize(imagePath: string): Promise<number> {
     let stats = await stat(imagePath);
     return stats.size;
@@ -217,7 +254,7 @@ export default class VrChatUploader {
       headers
     });
 
-    if (res.status !== 200) throw new Error("Cannot upload image: Failed to get upload url");
+    if (res.status !== 200) throw new Error(`Cannot upload image: Failed to get upload url: ${(await res.json()).error.message} (Version now ${fileVersion})`);
 
     let json = await res.json();
     return json.url;
