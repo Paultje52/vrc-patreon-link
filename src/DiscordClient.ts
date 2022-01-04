@@ -3,8 +3,8 @@ import type { ClientOptions } from "./VrcPatreonLinkTypes";
 
 export default class DiscordClient extends Client {
 
-  private guildId: string;
-  private roleIds: string[];
+  public guildId: string;
+  public roleIds: string[];
 
   constructor(options: ClientOptions) {
     super({

@@ -3,7 +3,9 @@ import DiscordClient from "./DiscordClient";
 import VrChatUploader from "./vrChatUploader";
 import * as Keyv from "keyv";
 import imageEncoder from "./imageEncoder/imageEncoder";
-import { writeFileSync } from "fs";
+import { writeFile } from "fs/promises";
+import { join } from "path";
+import { parser } from "html-metadata-parser";
 
 // Startup
 console.log("Starting VRC-Patreon-Link...");
@@ -104,6 +106,17 @@ async function inviteNewPatron(user: User) {
 
   // Save the user to the database
   await database.set(user.id, false);
+  addUser(user.id);
+}
+
+let users: string[];
+(async () => {
+  users = (await database.get("users")) || [];
+})();
+
+async function addUser(id: string) {
+  users.push(id);
+  await database.set("users", users);
 }
 
 client.on("messageCreate", async (message) => {
@@ -141,7 +154,77 @@ client.on("messageCreate", async (message) => {
     ]
   });
 
+  updateUsers();
+
 });
+
+let isUpdating = false;
+async function updateUsers() {
+  while (isUpdating) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+
+  isUpdating = true;
+  let ranks = {};
+  
+  let guild = client.guilds.cache.get(client.guildId);
+  if (!guild) throw new Error(`Guild ${client.guildId} not found!`);
+
+  let members = await guild.members.fetch()
+    .catch(console.error);
+
+  if (!members) {
+    console.warn("Couldn't fetch members!");
+    return [];
+  }
+
+  let roles: string[] = [];
+  for (let roleId of client.roleIds) {
+    let role = await guild.roles.fetch(roleId);
+
+    if (!role) console.warn(`Role ${roleId} not found!`);
+    else roles.push(role.id);
+  }
+
+  for (let member of Array.from(members.values())) {
+    let vrChatId = await database.get(member.id);
+    if (typeof vrChatId !== "string") continue;
+   
+    let res: any = await parser(`https://vrchat.com/home/user/${vrChatId}`);
+    let username;
+    if (res && res.og && res.og.title) username = res.og.title;
+    else username = vrChatId;
+
+    for (let role of roles) {
+
+      if (member.roles.cache.has(role)) {
+
+        if (!ranks[role]) ranks[role] = [ guild.roles.cache.get(role).name ];
+        ranks[role].push(username);
+        break;
+      }
+    }
+
+  }
+
+  let ranksExport = [];
+  for (let roleId in ranks) {
+    ranksExport.push(`${ranks[roleId].join(".")}`);
+  }
+
+  console.log(ranksExport.join("\n"));
+
+  let img = imageEncoder(ranksExport.join("\n"));
+  let path = join(__dirname, "ranks.png");
+  await writeFile(path, img);
+
+  let res = await vrChatUploader.upload(path);
+  if (!res) console.warn("Couldn't upload ranks!");
+
+  isUpdating = false;
+  console.log("Updated ranks!");
+
+}
 
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isButton()) return;
