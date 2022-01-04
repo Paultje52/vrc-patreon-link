@@ -6,6 +6,7 @@ import imageEncoder from "./imageEncoder/imageEncoder";
 import { writeFile } from "fs/promises";
 import { join } from "path";
 import { parser } from "html-metadata-parser";
+import { addLink, addLinkServer, removeLink } from "./buttons";
 
 // Startup
 console.log("Starting VRC-Patreon-Link...");
@@ -66,13 +67,7 @@ async function inviteNewPatron(user: User) {
   user.send({
     embeds: [ embed ],
     components: [
-      new MessageActionRow().addComponents(
-        new MessageButton()
-          .setCustomId("add-link")
-          .setLabel("Add link")
-          .setEmoji("🔗")
-          .setStyle("PRIMARY")
-      )
+      new MessageActionRow().addComponents(addLink)
     ]
   })
     .catch(async () => {
@@ -91,13 +86,7 @@ async function inviteNewPatron(user: User) {
 
         embeds: [ embed ],
         components: [
-          new MessageActionRow().addComponents(
-            new MessageButton()
-              .setCustomId("add-link-srv")
-              .setLabel("Add link")
-              .setEmoji("🔗")
-              .setStyle("PRIMARY")
-          )
+          new MessageActionRow().addComponents(addLinkServer)
         ]
       });
       database.set(msg.id, user.id);
@@ -144,13 +133,7 @@ client.on("messageCreate", async (message) => {
       .setDescription("Your VRChat profile link has been saved! To remove it, click the button below.")
     ],
     components: [
-      new MessageActionRow().addComponents(
-        new MessageButton()
-          .setCustomId("remove-link")
-          .setLabel("Remove link")
-          .setEmoji("❌")
-          .setStyle("SECONDARY")
-      )
+      new MessageActionRow().addComponents(removeLink)
     ]
   });
 
@@ -241,13 +224,7 @@ client.on("interactionCreate", async (interaction) => {
         .setDescription("Your VRChat profile link has been removed! To add it again, click the button below.")
       ],
       components: [
-        new MessageActionRow().addComponents(
-          new MessageButton()
-            .setCustomId("add-link")
-            .setLabel("Add link")
-            .setEmoji("🔗")
-            .setStyle("PRIMARY")
-        )
+        new MessageActionRow().addComponents(addLink)
       ]
     });
 
