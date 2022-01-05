@@ -30,7 +30,10 @@ export default class VrChatUploader {
     console.debug(`Uploading ${imagePath} to VRChat!`);
 
     // Get saved cookie
-    let cookie = await this.readCookieFile();
+    let cookie: string;
+    try {
+      cookie = await this.readCookieFile();
+    } catch(e) {}
 
     // Check if the cookie is valid
     if (!cookie || !(await this.isValidCookie(cookie))) {
