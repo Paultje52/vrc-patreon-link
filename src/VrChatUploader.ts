@@ -27,19 +27,22 @@ export default class VrChatUploader {
 
   public async upload(imagePath: string): Promise<boolean> {
 
+    console.debug(`Uploading ${imagePath} to VRChat!`);
+
     // Get saved cookie
     let cookie = await this.readCookieFile();
 
     // Check if the cookie is valid
     if (!cookie || !(await this.isValidCookie(cookie))) {
-      console.log("Cookie is invalid, logging in again...");
+      console.debug("Cookie is invalid, logging in again...");
       // Login
       let rawCookieData = await this.login(this.options.username, this.options.password);
       cookie = this.parseCookies(rawCookieData);
 
       // Save it for the next time
       await this.writeCookieFile(cookie);
-    }
+
+    } else console.debug("Cookie is valid, using it...");
 
     // Request headers
     let headers = {
@@ -49,10 +52,12 @@ export default class VrChatUploader {
 
     // Get previous image
     let prevAvatar = await this.getAvatar(headers, this.options.avatarId);
+    console.debug("Got previous avatar");
 
     // Pregenerate hash and fileId for the upload
     let md5Hash = await this.getFileMd5(imagePath);
     let fileId = this.extractFileId(prevAvatar.imageUrl);
+    console.debug("Fileinfo generated");
 
     // Start file upload
     let fileVersion: string;
@@ -61,11 +66,15 @@ export default class VrChatUploader {
     try {
       let fetchedNewFileVersion = await this.startFileUpload(headers, md5Hash, imagePath, fileId)
         .catch((e) => {
-          console.log(e);
+          console.warn(`Create new file version error: ${e}`);
         });
+
+      console.debug(`Fetched new file version: ${fetchedNewFileVersion}`);
 
       // The new version creation somehow failed - Let's delete and try again!
       if (!fetchedNewFileVersion) {
+        console.warn("Failed to create new file version, deleting and trying again...");
+
         let latestVersion = await this.getLatestFileVersion(headers, fileId)
           .catch((e) => {throw new Error(e)});
 
@@ -79,11 +88,14 @@ export default class VrChatUploader {
 
       let uploadUrl = await this.getUploadUrl(headers, fileId, fileVersion)
         .catch((e) => {throw new Error(e)});
+      console.debug(`Uploading to ${uploadUrl}`);
+
       await this.uploadImage(uploadUrl, imagePath, md5Hash, headers)
         .catch((e) => {throw new Error(e)});
+      console.debug("Image uploaded, cleaning up...");
 
     } catch (e) {
-      console.log(e);
+      console.warn(e);
       failed = true;
     }
       
@@ -272,8 +284,6 @@ export default class VrChatUploader {
         "Content-Type": "image/png"
       }
     });
-
-    console.log(await res.text());
 
     if (res.status !== 200) throw new Error("Cannot upload image: Failed while upload image");
   }
