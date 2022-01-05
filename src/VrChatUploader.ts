@@ -163,7 +163,7 @@ export default class VrChatUploader {
       }
     });
 
-    if (res.status !== 200) throw new Error("Cannot upload image: Failed to login");
+    if (res.status !== 200) throw new Error(`Cannot upload image: Failed to login: ${(await res.json()).error.message}`);
     return res.headers.raw()["set-cookie"];
 
   }
