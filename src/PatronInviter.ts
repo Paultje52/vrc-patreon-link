@@ -13,7 +13,9 @@ export default class PatronInviter {
   private client: DiscordClient;
   private database: Keyv;
   private vrChat: VrChat;
+  
   private queue: Queue = new Queue(15000);
+  private invitePending: Map<string, boolean> = new Map(); 
 
   constructor(client: DiscordClient, database: Keyv, vrChat: VrChat) {
     this.client = client;
@@ -29,16 +31,18 @@ export default class PatronInviter {
     }
   }
 
-  public async inviteNewPatron(patron: Patron) {
+  public inviteNewPatron(patron: Patron) {
+    
+    if (this.invitePending.get(patron.getMember().id)) return;
+    this.invitePending.set(patron.getMember().id, true);
 
-    // Get patron status
-    let status = await patron.getLinkStatus(this.database);
-    if (status !== linkStatuses.notInvited) return;
+    this.queue.add(async () => {
 
-    patron.setLinkStatus(linkStatuses.invited, this.database);
+      this.invitePending.delete(patron.getMember().id);
+      // Get patron status
+      let status = await patron.getLinkStatus(this.database);
+      if (status !== linkStatuses.notInvited) return;
 
-    this.queue.add(() => {
-      
       // Send a message to the new user!
       patron.sendMessage({
         embeds: [ welcomeMessageEmbed ],
@@ -47,11 +51,13 @@ export default class PatronInviter {
         ]
       }).then(() => {
         // Successfully sent message, set link status to invited
+        patron.setLinkStatus(linkStatuses.invited, this.database);
         console.log(`Sent welcome message to new patron: ${patron.getMember().displayName} (${patron.getMember().id})`);
 
       }).catch(async () => {
         // We cannot send the user a DM, because they have DMs disabled.
         // Let's send a message in the server mentioning them instead.
+        patron.setLinkStatus(linkStatuses.invited, this.database);
         console.log(`Couldn't invite ${patron.getMember().displayName} (${patron.getMember().id}) - Send a message in the server instead.`);
         let channel = await this.client.getMainGuildChannel();
         let msg = await channel.send({
