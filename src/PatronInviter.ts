@@ -30,12 +30,15 @@ export default class PatronInviter {
   }
 
   public async inviteNewPatron(patron: Patron) {
+
     // Get patron status
     let status = await patron.getLinkStatus(this.database);
     if (status !== linkStatuses.notInvited) return;
 
-    this.queue.add(() => {
+    patron.setLinkStatus(linkStatuses.invited, this.database);
 
+    this.queue.add(() => {
+      
       // Send a message to the new user!
       patron.sendMessage({
         embeds: [ welcomeMessageEmbed ],
@@ -44,7 +47,6 @@ export default class PatronInviter {
         ]
       }).then(() => {
         // Successfully sent message, set link status to invited
-        patron.setLinkStatus(linkStatuses.invited, this.database);
         console.log(`Sent welcome message to new patron: ${patron.getMember().displayName} (${patron.getMember().id})`);
 
       }).catch(async () => {
@@ -60,7 +62,6 @@ export default class PatronInviter {
           )]
         });
 
-        patron.setLinkStatus(linkStatuses.invited, this.database);
         this.database.set("server-message."+msg.id, patron.getMember().id);
       });
 
