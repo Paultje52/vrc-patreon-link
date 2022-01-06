@@ -6,12 +6,14 @@ import DiscordClient from "./DiscordClient";
 import { userRegex } from "./util/regex";
 import VrChat from "./VrChat";
 import * as Keyv from "keyv";
+import Queue from "./util/Queue";
 
 export default class PatronInviter {
 
   private client: DiscordClient;
   private database: Keyv;
   private vrChat: VrChat;
+  private queue: Queue = new Queue(15000);
 
   constructor(client: DiscordClient, database: Keyv, vrChat: VrChat) {
     this.client = client;
@@ -32,33 +34,38 @@ export default class PatronInviter {
     let status = await patron.getLinkStatus(this.database);
     if (status !== linkStatuses.notInvited) return;
 
-    // Send a message to the new user!
-    patron.sendMessage({
-      embeds: [ welcomeMessageEmbed ],
-      components: [
-        new MessageActionRow().addComponents(addLink)
-      ]
-    }).then(() => {
-      // Successfully sent message, set link status to invited
-      patron.setLinkStatus(linkStatuses.invited, this.database);
-      console.log(`Sent welcome message to new patron: ${patron.getMember().displayName} (${patron.getMember().id})`);
+    this.queue.add(() => {
 
-    }).catch(async () => {
-      // We cannot send the user a DM, because they have DMs disabled.
-      // Let's send a message in the server mentioning them instead.
-      console.log(`Couldn't invite ${patron.getMember().displayName} (${patron.getMember().id}) - Send a message in the server instead.`);
-      let channel = await this.client.getMainGuildChannel();
-      let msg = await channel.send({
-        embeds: [dmsClosedEmbed],
-        content: `<@${patron.getMember().id}>`,
-        components: [new MessageActionRow().addComponents(
-          addLinkServer
-        )]
+      // Send a message to the new user!
+      patron.sendMessage({
+        embeds: [ welcomeMessageEmbed ],
+        components: [
+          new MessageActionRow().addComponents(addLink)
+        ]
+      }).then(() => {
+        // Successfully sent message, set link status to invited
+        patron.setLinkStatus(linkStatuses.invited, this.database);
+        console.log(`Sent welcome message to new patron: ${patron.getMember().displayName} (${patron.getMember().id})`);
+
+      }).catch(async () => {
+        // We cannot send the user a DM, because they have DMs disabled.
+        // Let's send a message in the server mentioning them instead.
+        console.log(`Couldn't invite ${patron.getMember().displayName} (${patron.getMember().id}) - Send a message in the server instead.`);
+        let channel = await this.client.getMainGuildChannel();
+        let msg = await channel.send({
+          embeds: [dmsClosedEmbed],
+          content: `<@${patron.getMember().id}>`,
+          components: [new MessageActionRow().addComponents(
+            addLinkServer
+          )]
+        });
+
+        patron.setLinkStatus(linkStatuses.invited, this.database);
+        this.database.set("server-message."+msg.id, patron.getMember().id);
       });
 
-      patron.setLinkStatus(linkStatuses.invited, this.database);
-      this.database.set("server-message."+msg.id, patron.getMember().id);
     });
+    
 
   }
 
