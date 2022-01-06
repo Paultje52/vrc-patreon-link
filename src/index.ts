@@ -15,7 +15,7 @@ checkEnvironmentVariables();
 // Creating the logger
 new Logger({
   enabled: process.env.LOGGER_ENABLED === "true",
-  timezone: process.env.LOGGER_TIMEZONE
+  timezone: <string> process.env.LOGGER_TIMEZONE
 });
 
 // Create database
@@ -23,15 +23,15 @@ let database = new Keyv("sqlite://patreons.sqlite");
 
 // Construct classes
 let client = new DiscordClient({
-  token: process.env.DISCORD_TOKEN,
-  guild: process.env.GUILD_ID,
-  roles: process.env.ROLE_ID,
-  channel: process.env.PATREON_CHANNEL
+  token: <string> process.env.DISCORD_TOKEN,
+  guild: <string> process.env.GUILD_ID,
+  roles: <string> process.env.ROLE_ID,
+  channel: <string> process.env.PATREON_CHANNEL
 });
 let vrChat = new VrChat({
-  username: process.env.VR_CHAT_USERNAME,
-  password: process.env.VR_CHAT_PASSWORD,
-  avatarId: process.env.VR_CHAT_AVATARID
+  username: <string> process.env.VR_CHAT_USERNAME,
+  password: <string> process.env.VR_CHAT_PASSWORD,
+  avatarId: <string> process.env.VR_CHAT_AVATARID
 });
 let patronUpdater = new PatronUpdater(client, database, vrChat); // The patron updater is responsible for updating the patrons
 let patronInviter = new PatronInviter(client, database, vrChat); // If a new patron is found, the patron inviter is responsible for inviting them, including handling message buttons 
