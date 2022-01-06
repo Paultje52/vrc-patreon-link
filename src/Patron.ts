@@ -1,5 +1,5 @@
 import { GuildMember, Message, MessageOptions } from "discord.js";
-import type * as Keyv from "keyv";
+import * as Keyv from "keyv";
 
 const linkStatuses = {
   notInvited: 0,

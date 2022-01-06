@@ -5,7 +5,7 @@ import Patron, { linkStatuses } from "./Patron";
 import DiscordClient from "./DiscordClient";
 import { userRegex } from "./util/regex";
 import VrChat from "./VrChat";
-import type * as Keyv from "keyv";
+import * as Keyv from "keyv";
 
 export default class PatronInviter {
 

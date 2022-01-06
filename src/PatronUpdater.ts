@@ -1,5 +1,5 @@
 import { unlink, writeFile } from "fs/promises";
-import type * as Keyv from "keyv";
+import * as Keyv from "keyv";
 import path = require("path");
 import DiscordClient from "./DiscordClient";
 import imageEncoder from "./imageEncoder/imageEncoder";
