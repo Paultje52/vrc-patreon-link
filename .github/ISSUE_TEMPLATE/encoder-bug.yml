@@ -32,7 +32,7 @@ body:
         - Master (Directly from repository code)
     validations:
       required: true
-  - type: dropdown
+  - type: input
     id: nodeversion
     attributes:
       label: Your node version
@@ -40,3 +40,4 @@ body:
       placeholder: Run node --version
     validations:
       required: true
+      
