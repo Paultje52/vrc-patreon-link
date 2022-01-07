@@ -1,5 +1,5 @@
 import VrChatUploader from "./VrChatUploader";
-import { userDataCache, VrChatUploaderOptions } from "./VrcPatreonLinkTypes";
+import { userDataCache, VrChatUploaderOptions } from "../VrcPatreonLinkTypes";
 import { parser } from "html-metadata-parser";
 
 export default class VrChat {

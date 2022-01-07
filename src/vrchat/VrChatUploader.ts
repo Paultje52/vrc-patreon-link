@@ -3,7 +3,7 @@ import { readFile, writeFile, stat } from "fs/promises";
 import { createReadStream } from "fs";
 import * as path from "path";
 import * as crypto from "crypto";
-import { VrChatUploaderOptions } from "./VrcPatreonLinkTypes";
+import { VrChatUploaderOptions } from "../VrcPatreonLinkTypes";
 
 export default class VrChatUploader {
 

@@ -1,12 +1,12 @@
-import { acceptProfileEmbed, addVrChatLinkEmbed, confirmUser, denyProfileTryAgainEmbed, dmsClosedEmbed, invalidLinkEmbed, invalidUseridEmbed, removedLinkEmbed, stillDmsClosedEmbed, welcomeMessageEmbed } from "./util/messages";
-import { addLink, addLinkServer, addProfileNo, addProfileYes, buttonIds, removeLink } from "./util/buttons";
+import { acceptProfileEmbed, addVrChatLinkEmbed, confirmUser, denyProfileTryAgainEmbed, dmsClosedEmbed, invalidLinkEmbed, invalidUseridEmbed, removedLinkEmbed, stillDmsClosedEmbed, welcomeMessageEmbed } from "../util/messages";
+import { addLink, addLinkServer, addProfileNo, addProfileYes, buttonIds, removeLink } from "../util/buttons";
 import { ButtonInteraction, Interaction, Message, MessageActionRow } from "discord.js";
 import Patron, { linkStatuses } from "./Patron";
-import DiscordClient from "./DiscordClient";
-import { userRegex } from "./util/regex";
-import VrChat from "./VrChat";
+import DiscordClient from "../discord/DiscordClient";
+import { userRegex } from "../util/regex";
+import VrChat from "../vrchat/VrChat";
 import * as Keyv from "keyv";
-import Queue from "./util/Queue";
+import Queue from "../util/Queue";
 
 export default class PatronInviter {
 

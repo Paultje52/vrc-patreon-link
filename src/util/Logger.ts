@@ -1,5 +1,5 @@
 import { createWriteStream, existsSync, WriteStream } from "fs";
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir } from "fs/promises";
 import path = require("path");
 import { inspect } from "util";
 import { LoggerOptions } from "../VrcPatreonLinkTypes";

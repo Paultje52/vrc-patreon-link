@@ -1,10 +1,10 @@
 import { unlink, writeFile } from "fs/promises";
 import * as Keyv from "keyv";
 import path = require("path");
-import DiscordClient from "./DiscordClient";
-import imageEncoder from "./imageEncoder/imageEncoder";
+import DiscordClient from "../discord/DiscordClient";
+import imageEncoder from "../imageEncoder/imageEncoder";
 import Patron, { linkStatuses } from "./Patron";
-import VrChat from "./VrChat";
+import VrChat from "../vrchat/VrChat";
 
 export default class PatronUpdater {
 

@@ -1,6 +1,6 @@
 import { Client, Guild, GuildMember, Role, TextChannel, User } from "discord.js";
-import Patron from "./Patron";
-import type { ClientOptions } from "./VrcPatreonLinkTypes";
+import Patron from "../patreon/Patron";
+import type { ClientOptions } from "../VrcPatreonLinkTypes";
 
 export default class DiscordClient extends Client {
 
