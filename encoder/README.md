@@ -10,12 +10,12 @@ This is a Discord bot that sends everyone in a server with a role a message to l
 This system is written in [TypeScript](https://www.typescriptlang.org/) and compiles to JavaScript ([NodeJS](http://nodejs.org/) code).
 
 ## Setup
-0. Make sure to install [Node.js](https://nodejs.org/en/download/).
-1. Download the latest [release](https://github.com/Paultje52/vrc-patreon-link/releases).
-2. Extract the contents of the zip file called `VRC-Patreon-Link`.
-3. Install the NPM packages by running `npm install` in the main directory.
-4. Install PM2 by running `npm install -g pm2`.
-5. Start the linker by running `pm2 start src/index.js`.
+1. Make sure to install [Node.js](https://nodejs.org/en/download/).
+2. Download the latest [release](https://github.com/Paultje52/vrc-patreon-link/releases).
+3. Extract the contents of the zip file called `VRC-Patreon-Link`.
+4. Install the NPM packages by running `npm install` in the main directory.
+5. Install PM2 by running `npm install -g pm2`.
+6. Start the linker by running `pm2 start src/index.js`.
 > Make sure you changed the variables in [.env](#env)
 
 ## .env
@@ -28,10 +28,10 @@ The whole config can be changed in the [.env](.env) file. Rename `.env.example` 
 - `PATREON_CHANNEL`: The patreon notification channel. When someone doesn't have their DMs open, the bot will send a message here notifying that user. Look [here](https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-) if you want to know how to find them. 
 
 ### VRChat
-> You cannot use 2FA for VRChat.
+> Currently using a VRChat account with 2FA enabled is not supported, so its recommended to create a secondary account purely for use with this bot.
 - `VR_CHAT_USERNAME`: The username of the VRChat account.
 - `VR_CHAT_PASSWORD`: The password of the VRChat account.
-- `VR_CHAT_AVATARID`: The avatarID of the avatar that will be changed to update the patreons.
+- `VR_CHAT_AVATARID`: The blueprint ID of the avatar that will be changed to update the patreons. The same blueprint ID should be used in AvatarImageReader
 
 ### Logger
 - `LOGGER_ENABLED`: If the logger should be enabled (`true` or `false`).
