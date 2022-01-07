@@ -20,8 +20,8 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Package-lock generation
-      run: npm i --package-lock-only
+      run: cd encoder && npm i --package-lock-only
     - name: Initiate build client
-      run: npm ci
+      run: cd encoder && npm ci
     - name: Run build script
-      run: npm run-script build
+      run: cd encoder && npm run-script build
