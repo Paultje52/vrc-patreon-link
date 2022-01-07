@@ -2,7 +2,7 @@ import DiscordClient from "./discord/DiscordClient";
 import * as Keyv from "keyv";
 import PatronInviter from "./patreon/PatronInviter";
 import PatronUpdater from "./patreon/PatronUpdater";
-import VrChat from "./VrChat/VrChat";
+import VrChat from "./vrchat/VrChat";
 import checkEnvironmentVariables from "./util/checkEnvironmentVariables";
 import Logger from "./util/Logger";
 
