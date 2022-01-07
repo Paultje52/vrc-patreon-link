@@ -27,7 +27,7 @@ SECOND_ROLE_NAME.THIRD_USERNAME.FOURTH_USERNAME
 > **Note:** The order of the roles may shift. When the bot didn't find a user that linked their account on a role, the rol won't be included in the encoded text.
 
 The text will be encoded in a PNG image with the size of `128x96`. The encoder will start each line at the right. The first part of the text is the length, after that the normal text follows. All the characters will be encoded in `utf16`.<br>
-The data is saved in the color of each pixel. Each two bytes are a color value (Red, green or blue). An example avatar can be found below.<br>
+The data is saved in the color of each pixel. Each two bytes are a color value (Red, green or blue). An example (4x upscaled) avatar can be found below.<br>
 ![ExampleEncodedAvatar](https://media.discordapp.net/attachments/560382226592694282/929147650173984839/tmp.png)
 
 The first time an avatar pedestal is loaded in the world, the thumbnail image will be downloaded. This gets cached locally. The image is copied from the pedestal once downloading finishes and captured with a camera, then output to a rendertexture. This rendertexture is decoded by AvatarImageReader, which outputs a string, which is then sent to the parser part of this project. The way caching works means that a user needs to restart their client in order to see the most up to date version.
