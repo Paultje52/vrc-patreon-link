@@ -1,0 +1,17 @@
+name: Feature request
+description: Request a new feature
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping us improve VRC-Patreon-Link by suggesting new ideas!
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature description
+      description: Try to describe your feature request in as much detail as possible.
+      placeholder: Tell us what you want to see!
+    validations:
+      required: true
