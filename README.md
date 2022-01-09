@@ -5,12 +5,14 @@
 - [Encoder](./encoder/README.md)
 - [Parser](./parser/README.md)
 
+## Like this project?
+Give us a star on [GitHub](https://github.com/Paultje52/vrc-patreon-link) and join our [Discord](https://discord.gg/n4VPPnX2Mb)!
 ## How it works
 The only way to update VRChat worlds without pushing a whole new update to them, is by collecting data from avatars.<br>
 The [Encoder](./encoder/README.md) uploades an avatar to VRChat. All the VRChat usernames of the patrons are included in this avatar.<br>
 The [Parser](./parser/README.md) reads the avatar and extracts the usernames so you can display them. Read the full technical details below.
 
-An example of a world using this system is [Project Aincrad](https://vrchat.com/home/world/wrld_1caa6d80-9ee4-4a7d-95ee-50259272aa35)
+An example of a world using this system is [Project Aincrad](https://vrchat.com/home/world/wrld_1caa6d80-9ee4-4a7d-95ee-50259272aa35).
 
 ### Technical details
 > **Note:** You should have a setup that gives patrons a role in Discord. You can use different roles for different tiers and you can even add your Discord staff as separate roles for the synchronization!
