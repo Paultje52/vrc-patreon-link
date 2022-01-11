@@ -29,12 +29,12 @@
   },
   "homepage": "https://github.com/Paultje52/vrc-patreon-link#readme",
   "dependencies": {
-    "@keyv/sqlite": "2.0.4",
+    "@keyv/sqlite": "2.1.0",
     "canvas": "2.8.0",
-    "discord.js": "13.5.0",
+    "discord.js": "13.5.1",
     "dotenv": "10.0.0",
     "html-metadata-parser": "2.0.4",
-    "keyv": "4.0.4",
+    "keyv": "4.0.5",
     "node-fetch": "2.6.6"
   }
 }
