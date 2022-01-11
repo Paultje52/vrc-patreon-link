@@ -11,8 +11,14 @@ export default class VrChat {
     this.uploader = new VrChatUploader(uploaderOptions);
   }
 
-  public upload(imagePath: string): Promise<boolean> {
-    return this.uploader.upload(imagePath);
+  public async upload(imagePath: string): Promise<boolean> {
+    let res = await this.uploader.upload(imagePath)
+      .catch((e) => {
+        console.error(e);
+        return false;
+      });
+
+    return res;
   }
 
   private async _getUserdata(vrChatUserId: string): Promise<userDataCache> {
