@@ -30,5 +30,6 @@ body:
       description: What version of our code are you running?
       options:
         - Master (Directly from repository code)
+        - v1.0.0
     validations:
       required: true
