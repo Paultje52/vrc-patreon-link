@@ -1,5 +1,5 @@
-const VrChat = require("../../build/vrchat/VrChat.js").default;
-const { userRegex } = require("../../build/util/regex.js");
+const VrChat = require("../build/vrchat/VrChat.js").default;
+const { userRegex } = require("../build/util/regex.js");
 const fs = require("fs/promises");
 const path = require("path");
 let vrChat;
