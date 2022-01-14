@@ -5,14 +5,106 @@ using UnityEngine;
 using VRC.SDKBase;
 using VRC.Udon;
 
+#if UNITY_EDITOR && !COMPILER_UDONSHARP
+using UdonSharpEditor;
+using UnityEditor;
+
+[CustomEditor(typeof(PatreonDecoder))]
+public class PatreonDecoderEditor : Editor
+{
+    private bool showDefaultInspector;
+    
+    public override void OnInspectorGUI()
+    {
+        if (UdonSharpGUI.DrawDefaultUdonSharpBehaviourHeader(target)) return;
+
+        PatreonDecoder decoder = (PatreonDecoder)target;
+        decoder.UpdateProxy();
+        EditorGUI.BeginChangeCheck();
+        
+        GUIStyle bigHeaderStyle = new GUIStyle(EditorStyles.label) {richText = true, fontSize = 15};
+        GUIStyle headerStyle = new GUIStyle(EditorStyles.label) {richText = true};
+            
+        EditorGUILayout.LabelField("<b>VRC Patreon Link Parser</b>", bigHeaderStyle);
+
+        decoder.avatarImageReader = (AvatarImagePrefab)EditorGUILayout.ObjectField("Linked to: ",
+            decoder.avatarImageReader, typeof(AvatarImagePrefab), true);
+        
+        if(decoder.avatarImageReader == null) EditorGUILayout.HelpBox("Make sure to link PatreonDecoder to a valid AvatarImageReader instance.", MessageType.Warning);
+
+        EditorGUILayout.Space(4);
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("<b>Role settings</b>", headerStyle);
+
+        if (decoder.roleNames == null)
+        {
+            decoder.roleNames = new string[0];
+            decoder.outputTMPs = new TextMeshPro[0];
+        }
+
+        if (GUILayout.Button("Add Role"))
+        {
+            ArrayUtility.Add(ref decoder.roleNames, "New role");
+            ArrayUtility.Add(ref decoder.outputTMPs, null);
+        }
+        EditorGUILayout.EndHorizontal();
+
+        for (int i = 0; i < decoder.roleNames.Length; i++)
+        {
+            EditorGUILayout.BeginVertical("helpbox");
+            EditorGUILayout.BeginHorizontal();
+            
+            EditorGUILayout.LabelField(decoder.roleNames[i]);
+
+            if (GUILayout.Button("Remove"))
+            {
+                ArrayUtility.RemoveAt(ref decoder.roleNames, i);
+                ArrayUtility.RemoveAt(ref decoder.outputTMPs, i);
+                EditorGUILayout.EndHorizontal();
+                continue;
+            }
+            EditorGUILayout.EndHorizontal();
+            
+            decoder.roleNames[i] = EditorGUILayout.TextField("Role name", decoder.roleNames[i]);
+            decoder.outputTMPs[i] = (TextMeshPro)EditorGUILayout.ObjectField("TMP output (optional)",
+                decoder.outputTMPs[i], typeof(TextMeshPro), true);
+            EditorGUILayout.EndVertical();
+        }
+        
+        EditorGUILayout.HelpBox("Any role you wish to check for in code needs to be added here first.", MessageType.Info);
+        
+        if (EditorGUI.EndChangeCheck())
+        {
+            decoder.ApplyProxyModifications();
+
+            EditorUtility.SetDirty(UdonSharpEditorUtility.GetBackingUdonBehaviour(decoder));
+
+            if (PrefabUtility.IsPartOfAnyPrefab(decoder.gameObject))
+            {
+                PrefabUtility.RecordPrefabInstancePropertyModifications(
+                    UdonSharpEditorUtility.GetBackingUdonBehaviour(decoder));
+            }
+        }
+
+        showDefaultInspector = EditorGUILayout.Foldout(showDefaultInspector, "Show default inspector");
+        if (showDefaultInspector)
+        {
+            DrawDefaultInspector();
+        }
+    }
+}
+
+#endif
+
 [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
 public class PatreonDecoder : UdonSharpBehaviour
 {
-    [SerializeField] private ReadRenderTexture readRenderTexture;
+    public AvatarImagePrefab avatarImageReader;
 
-    [SerializeField] private TextMeshPro[] outputTMPs;
-    [SerializeField] private TextMeshPro[] outputHeaders;
-    [SerializeField] private string[] roleNames;
+    public string[] roleNames;
+    public TextMeshPro[] outputTMPs;
+    
     private string[] roleStrings;
     public bool decodeFinished;
 
@@ -26,7 +118,7 @@ public class PatreonDecoder : UdonSharpBehaviour
         Debug.Log("[<color=blue>VRCPatreonLink</color>] Starting decode...");
         
         //different roles are split by newline
-        string[] splitText = readRenderTexture.outputString.Split('\n');
+        string[] splitText = avatarImageReader.outputString.Split('\n');
         roleStrings = new string[roleNames.Length];
 
         for (int index = 0; index < roleStrings.Length; index++)
@@ -60,7 +152,7 @@ public class PatreonDecoder : UdonSharpBehaviour
             //only proceed if this role was matched
             if (roleStrings[currentStep].Length > 0)
             {
-                _DecodeList(roleStrings[currentStep], outputTMPs[currentStep], outputHeaders[currentStep]);
+                _DecodeList(roleStrings[currentStep], outputTMPs[currentStep]);
             }
             currentStep++;
             SendCustomEventDelayedFrames(nameof(_DecodeStep), 5);
@@ -80,7 +172,7 @@ public class PatreonDecoder : UdonSharpBehaviour
         }
     }
 
-    private void _DecodeList(string input, TextMeshPro target, TextMeshPro header)
+    private void _DecodeList(string input, TextMeshPro target)
     {
         string[] users = input.Split('.');
         string output = "";
@@ -98,9 +190,9 @@ public class PatreonDecoder : UdonSharpBehaviour
                 localPlayerRoles += users[0] + ".";
             }
         }
-
-        header.text = users[0];
-        target.text = output;
+        
+        if (target != null)
+            target.text = output;
     }
 
     private string localPlayerRoles = "";
