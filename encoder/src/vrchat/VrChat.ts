@@ -25,7 +25,7 @@ export default class VrChat {
 
     if (this.userdataCache.has(vrChatUserId)) {
       let cachedUserdata = this.userdataCache.get(vrChatUserId);
-      if (Date.now()-(1000*60*30) < cachedUserdata.cacheTime) return cachedUserdata;
+      if (Date.now()-(1000*60*60) < cachedUserdata.cacheTime) return cachedUserdata;
     }
     
     let data = await parser(`https://vrchat.com/home/user/${vrChatUserId}`);
