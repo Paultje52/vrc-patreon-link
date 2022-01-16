@@ -33,8 +33,8 @@ export default class PatronUpdater {
     return patronsToUpdate;
   }
 
-  public async syncWithVrChat(): Promise<void> {
-    if (this.isUpdating) return console.warn("Already syncing - Why are you trying to sync so fast?");
+  public async syncWithVrChat(force?: boolean): Promise<void> {
+    if (this.isUpdating && !force) return console.warn("Already syncing - Why are you trying to sync so fast?");
     this.isUpdating = true;
     console.debug("Syncing patrons with VRChat...");
 
@@ -71,7 +71,7 @@ export default class PatronUpdater {
       this.isUpdating = false;
       return;
     }
-    if (exportRolesString === this.prevImageData) {
+    if (exportRolesString === this.prevImageData && !force) {
       console.debug("No changes detected, skipping...");
       this.isUpdating = false;
       return;
