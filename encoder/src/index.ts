@@ -45,13 +45,19 @@ client.on("ready", async () => {
   adminPanel.start();
 
   let patronsToInvite = await patronUpdater.updatePatrons();
-  patronInviter.inviteNewPatrons(patronsToInvite);
+  if (patronsToInvite.length > 0) {
+    console.log(`Sending invites to ${patronsToInvite.length} patron(s)...`);
+    patronInviter.inviteNewPatrons(patronsToInvite);
+  }
   
   patronUpdater.syncWithVrChat();
 });
 
 client.on("guildMemberUpdate", async () => {
   let patronsToInvite = await patronUpdater.updatePatrons();
+  if (patronsToInvite.length === 0) return;
+
+  console.log(`Sending invites to ${patronsToInvite.length} patron(s)...`);
   patronInviter.inviteNewPatrons(patronsToInvite);
 });
 
