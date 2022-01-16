@@ -5,6 +5,7 @@ import PatronUpdater from "./patreon/PatronUpdater";
 import VrChat from "./vrchat/VrChat";
 import checkEnvironmentVariables from "./util/checkEnvironmentVariables";
 import Logger from "./util/Logger";
+import AdminPanel from "./util/AdminPanel";
 
 // Startup log
 console.log("Starting VRC-Patreon-Link...");
@@ -13,7 +14,7 @@ console.log("Starting VRC-Patreon-Link...");
 checkEnvironmentVariables();
 
 // Creating the logger
-new Logger({
+let logger = new Logger({
   enabled: process.env.LOGGER_ENABLED === "true",
   timezone: <string> process.env.LOGGER_TIMEZONE
 });
@@ -35,10 +36,13 @@ let vrChat = new VrChat({
 });
 let patronUpdater = new PatronUpdater(client, database, vrChat); // The patron updater is responsible for updating the patrons
 let patronInviter = new PatronInviter(client, database, vrChat); // If a new patron is found, the patron inviter is responsible for inviting them, including handling message buttons 
+let adminPanel = new AdminPanel(client, patronUpdater, patronInviter, logger); // The admin panel is responsible for handling the admin commands
 
 // Log when the client is ready!
 client.on("ready", async () => {
   console.log(`Hello, I'm logged in as ${client.user.tag}!`);
+
+  adminPanel.start();
 
   let patronsToInvite = await patronUpdater.updatePatrons();
   patronInviter.inviteNewPatrons(patronsToInvite);
