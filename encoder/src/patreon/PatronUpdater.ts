@@ -67,7 +67,7 @@ export default class PatronUpdater {
     // For more information about the format, look at GitHub!
     let exportRolesString = this.convertExportRoles(exportRoles);
     if (!exportRolesString) {
-      console.warn("No export roles found!");
+      console.warn("Nothing to upload yet!");
       this.isUpdating = false;
       return;
     }
