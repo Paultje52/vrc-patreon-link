@@ -89,27 +89,31 @@ export default class PatronInviter {
     if (!interaction.isButton()) return;
   
     let buttonInteraction = <ButtonInteraction> interaction;
-    interaction.deferUpdate();
 
     let member = await this.client.getMainGuildMember(interaction.user);
     let patron = this.client.getPatron(member);
 
     switch (buttonInteraction.customId) {
       case buttonIds.addLinkId:
+        interaction.deferUpdate();
         this.addLinkButtonClick(patron);
         break;
       case buttonIds.addLinkSetverId:
+        interaction.deferUpdate();
         this.addLinkServerButtonClick(patron, buttonInteraction.message);
         break;
 
       case buttonIds.addProfileYesId:
+        interaction.deferUpdate();
         this.confirmProfileButtonClick(patron);
         break;
       case buttonIds.addProfileNoId:
+        interaction.deferUpdate();
         this.denyProfileButtonClick(patron);
         break;
 
       case buttonIds.removeLinkId:
+        interaction.deferUpdate();
         this.removeLinkButtonClick(patron);
         break;
     }
