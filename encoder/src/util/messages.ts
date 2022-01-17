@@ -53,7 +53,7 @@ let invalidUseridEmbed = (invalidUserid: string) => {
   return new MessageEmbed()
     .setTitle("Invalid VRChat user")
     .setColor("#ED4245")
-    .setDescription(`We could not find an user with the userID \`${_parseInput(invalidUserid)}\`.\nPlease make sure you are sending the correct profile link. If this issue persists, please contact an admin.`);
+    .setDescription(`We could not find a user with the userID \`${_parseInput(invalidUserid)}\`.\nPlease make sure you are sending the correct profile link. If this issue persists, please contact an admin.`);
 }
 
 let confirmUser = (username: string, profilePicture: string, userId: string) => {
