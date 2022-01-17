@@ -62,9 +62,8 @@ export default class PatronUpdater {
     // The keys don't matter here, they are just needed during the indexing phase
     // For more information about the format, look at GitHub!
     let exportRolesString = this.convertExportRoles(exportRoles);
-    if (!exportRolesString) {
+    if (!exportRolesString || exportRolesString.length === 0) {
       console.warn("Nothing to upload yet!");
-      this.isUpdating = false;
       return "";
     }
 
@@ -73,11 +72,16 @@ export default class PatronUpdater {
 
   public async syncWithVrChat(force?: boolean): Promise<void> {
     if (this.isUpdating && !force) return console.warn("Already syncing - Why are you trying to sync so fast?");
+    else if (this.isUpdating) console.warn("Already syncing - Forcing the bot to do it again. If error occurs, please restart the bot!");
     this.isUpdating = true;
     console.debug("Syncing patrons with VRChat...");
 
     // Get export string
     let exportRolesString = await this.getPatronList();
+    if (!exportRolesString || exportRolesString.length === 0) {
+      this.isUpdating = false;
+      return;
+    }
     this.prevImageData = exportRolesString;
     
     if (exportRolesString === this.prevImageData && !force) {
