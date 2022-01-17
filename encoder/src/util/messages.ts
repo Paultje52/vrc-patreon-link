@@ -7,12 +7,12 @@ let _parseInput = (input: string) => {
 let dmsClosedEmbed = new MessageEmbed()
   .setTitle("DMs are closed")
   .setColor("#EB459E")
-  .setDescription("The bot is currently unable to send you a DM. Please open your DMs (temporarily) and click the button below to start the VRChat link!.");
+  .setDescription("The patreon bot is currently unable to send you a DM. Please open your DMs (temporarily) and click the button below to start linking your account!.");
 
 let stillDmsClosedEmbed = new MessageEmbed()
     .setTitle("DMs are still closed!")
     .setColor("#EB459E")
-    .setDescription(`The bot is still unable to send you a DM. Please open your DMs (temporarily) and click the button again to start the VRChat link!`);
+    .setDescription(`The bot is still unable to send you a DM. Please open your DMs (temporarily) and click the button again to start linking your VRChat account!`);
 
 let welcomeMessageEmbed = new MessageEmbed()
   .setTitle("Welcome!")
@@ -25,22 +25,22 @@ let welcomeMessageEmbed = new MessageEmbed()
 let addVrChatLinkEmbed = new MessageEmbed()
   .setTitle("Setup your profile")
   .setColor("#57F287")
-  .setDescription("To setup your profile, please send your VRChat profile link below.\n> Want help? Look [here](https://docs.google.com/document/d/19o0WiEGXCdBuMgOXHpb4brQJs8-0boYlWiZHtLc1i2M/edit)!")
+  .setDescription("To setup your profile, please paste your VRChat profile URL below.\n> Want help? Look [here](https://docs.google.com/document/d/19o0WiEGXCdBuMgOXHpb4brQJs8-0boYlWiZHtLc1i2M/edit)!")
 
 let acceptProfileEmbed = (username: string) => {
   return new MessageEmbed()
     .setTitle("Profile updated!")
     .setColor("#57F287")
-    .setDescription(`Your VRChat profile link has been updated. Welcome, **${_parseInput(username)}**!\n_Please note that you'll have to restart your VRChat client for any changes to take effect._\n> To change your VRChat profile link, click the button below.`)
+    .setDescription(`Your VRChat profile URL has been updated. Welcome, **${_parseInput(username)}**!\n_Please note that you'll have to restart your VRChat client for any changes to take effect._\n> To change your VRChat profile URL, click the button below.`)
     .setFooter({
-      text: "It can take up to five minutes for the changes to take effect."
+      text: "It can take up to five minutes for changes to take effect."
     });
 }
 
 let denyProfileTryAgainEmbed = new MessageEmbed()
-  .setTitle("Denied profile")
+  .setTitle("Link Cancelled")
   .setColor("#ED4245")
-  .setDescription("You denied the profile link. Please send your profile link again.");
+  .setDescription("Please send your profile URL again.");
 
 let invalidLinkEmbed = (invalidLink: string) => {
   return new MessageEmbed()
@@ -70,7 +70,7 @@ let confirmUser = (username: string, profilePicture: string, userId: string) => 
 let removedLinkEmbed = new MessageEmbed()
   .setTitle("Profile link removed")
   .setColor("#ED4245")
-  .setDescription("Your VRChat profile link has been removed! To add it again, click the button below.");
+  .setDescription("Your VRChat profile URL has been removed! To add it again, click the button below.");
 
 let adminPanelEmbed = (msg?: string) => {
   return new MessageEmbed()
@@ -83,7 +83,7 @@ let adminPanelLoadingEmbed = new MessageEmbed()
   .setColor("#5865F2")
   .setDescription("Loading...");
 
-  let adminSendGetUserEmbed = new MessageEmbed()
+let adminSendGetUserEmbed = new MessageEmbed()
   .setTitle("Specify User")
   .setColor("#FEE75C")
   .setDescription("Please send the Discord User ID of the target user.\nNeed help? Look [here](https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-).\n> Click the button below to cancel.");
@@ -101,19 +101,19 @@ let adminSendOverrideUserEmbed = (username: string) => {
   return new MessageEmbed()
     .setTitle("Override user")
     .setColor("#EB459E")
-    .setDescription(`Please send the VRChat userlink to override the user \`${_parseInput(username)}\`.\n> Click the button below to cancel.`);
+    .setDescription(`Please send the VRChat URL to link with to the user \`${_parseInput(username)}\`.\n> Click the button below to cancel.`);
 }
 
 let adminConfirmForceUploadEmbed = new MessageEmbed()
   .setTitle("Force uploaded!")
   .setColor("#57F287")
-  .setDescription("The parons on VRChat are forcefully up-to-date!");
+  .setDescription("The image data has been succesfully reuploaded.");
 
 let adminConfirmResetEmbed = (username: string) => {
   return new MessageEmbed()
     .setTitle("Reset user")
     .setColor("#57F287")
-    .setDescription(`User \`${_parseInput(username)}\` resetted! If the user still has a patron role, the user will get invited again.`);
+    .setDescription(`User \`${_parseInput(username)}\` link state cleared! If the user still has a patreon role, the user will get invited again within the next few seconds.`);
 }
 
 let adminConfirmOverrideEmbed = (discordUsername: string, vrChatUsername: string) => {
@@ -126,14 +126,14 @@ let adminConfirmOverrideEmbed = (discordUsername: string, vrChatUsername: string
 let adminResetToPatronEmbed = new MessageEmbed()
   .setTitle("Link reset")
   .setColor("#EB459E")
-  .setDescription("An admin resetted the link to a patron. If you're still a patron, you'll recieve a new link message soon!");
+  .setDescription("Your VRChat profile URL was reset by an admin. If you are still a Patron, you should recieve a new link message soon!");
 
 let adminOverrideToPatronEmbed = (vrChatUsername: string, vrChatProfileUrl: string, vrChatId: string) => {
   return new MessageEmbed()
-    .setTitle("Link overriden")
+    .setTitle("Link replaced")
     .setColor("#EB459E")
     .setThumbnail(vrChatProfileUrl)
-    .setDescription(`An admin overrode your patron link.\nUsername: **${_parseInput(vrChatUsername)}**\n> To remove the link, click the button below.`)
+    .setDescription(`An admin replaced your VRChat profile URL.\nUsername: **${_parseInput(vrChatUsername)}**\n> To remove this link, click the button below.`)
     .setFooter({
       text: vrChatId
     });
