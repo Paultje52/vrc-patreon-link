@@ -80,19 +80,19 @@ let adminPanelLoadingEmbed = new MessageEmbed()
   .setColor("#5865F2")
   .setDescription("Loading...");
 
-let adminSendResetEmbed = new MessageEmbed()
+let adminSendGetUserEmbed = new MessageEmbed()
   .setTitle("User reset")
   .setColor("#ED4245")
-  .setDescription("Please send the Discord User ID of the user you want to reset.\nNeed help? Look [here](https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-).\n> Click the button below to cancel the reset.");
-let adminResetCancelledEmbed = new MessageEmbed()
-  .setTitle("User reset cancelled")
+  .setDescription("Please send the Discord User ID of the target user.\nNeed help? Look [here](https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-).\n> Click the button below to cancel.");
+let adminGetUserCancelledEmbed = new MessageEmbed()
+  .setTitle("Cancelled!")
   .setColor("#ED4245")
-  .setDescription("The reset has been cancelled.");
-let adminResetInvalidUserEmbed = (invalidUser: string) => {
+  .setDescription("The action has been cancelled.");
+let adminGetUserInvalidUserEmbed = (invalidUser: string) => {
   return new MessageEmbed()
-    .setTitle("User reset: Invalid user")
+    .setTitle("Invalid user")
     .setColor("#ED4245")
-    .setDescription(`The user \`${_parseInput(invalidUser)}\` could not be found. Try again by clicking the **Reset User** button.`);
+    .setDescription(`The user \`${_parseInput(invalidUser)}\` could not be found. Try again by clicking the button.`);
 }
 
 export {
@@ -113,7 +113,7 @@ export {
   adminPanelEmbed,
   adminPanelLoadingEmbed,
 
-  adminSendResetEmbed,
-  adminResetCancelledEmbed,
-  adminResetInvalidUserEmbed
+  adminSendGetUserEmbed,
+  adminGetUserCancelledEmbed,
+  adminGetUserInvalidUserEmbed
 }

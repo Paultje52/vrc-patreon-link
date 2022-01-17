@@ -4,7 +4,7 @@ import PatronInviter from "../patreon/PatronInviter";
 import PatronUpdater from "../patreon/PatronUpdater";
 import { adminPanelButtons, buttonIds } from "./buttons";
 import Logger from "./Logger";
-import { adminPanelEmbed, adminPanelLoadingEmbed, adminResetCancelledEmbed, adminResetInvalidUserEmbed, adminSendResetEmbed } from "./messages";
+import { adminGetUserCancelledEmbed, adminGetUserInvalidUserEmbed, adminPanelEmbed, adminPanelLoadingEmbed, adminSendGetUserEmbed } from "./messages";
 import * as fs from "fs/promises";
 import path = require("path");
 
@@ -153,12 +153,12 @@ export default class AdminPanel {
     console.log(`[Button action by ${user.username}] Exported patron list in channel!`);
   }
 
-  private async resetSpecifiedUserButtonClick(user: User) {
+  private async getSpecifiedUser(user: User, callback: (specifiedUser: GuildMember) => void) {
     let cancelButton = adminPanelButtons.cancel(user.id);
 
     let msg = await this.channel.send({
       content: `<@${user.id}>`,
-      embeds: [adminSendResetEmbed],
+      embeds: [adminSendGetUserEmbed],
       components: [new MessageActionRow().addComponents(
         cancelButton
       )]
@@ -184,7 +184,7 @@ export default class AdminPanel {
       messageCollector.stop();
 
       this.channel.send({
-        embeds: [adminResetCancelledEmbed]
+        embeds: [adminGetUserCancelledEmbed]
       }).then(msg => {
         setTimeout(() => {
           msg.delete();
@@ -203,7 +203,7 @@ export default class AdminPanel {
         .catch(() => undefined);
       if (!targetUser) {
         this.channel.send({
-          embeds: [adminResetInvalidUserEmbed(m.content)]
+          embeds: [adminGetUserInvalidUserEmbed(m.content)]
         }).then(msg => {
           setTimeout(() => {
             msg.delete();
@@ -213,17 +213,24 @@ export default class AdminPanel {
         return;
       }
       
-      console.log(`[Button action by ${user.username}] Resetting ${targetUser.user.username}...`);
-
-      let patron = this.client.getPatron(targetUser);
-      await this.patronInviter.removePatron(patron);
-      this.client.emit("guildMemberUpdate", targetUser, targetUser);
-
-      console.log(`[Button action by ${user.username}] ${targetUser.user.username} resetted!`);
+      callback(targetUser);
     });
     // Remove message on end
     messageCollector.on("end", () => {
       msg.delete();
+    });
+
+  }
+
+  private resetSpecifiedUserButtonClick(user: User) {
+    this.getSpecifiedUser(user, async (targetUser: GuildMember) => {
+      console.log(`[Button action by ${user.username}] Resetting ${targetUser.user.username}...`);
+  
+      let patron = this.client.getPatron(targetUser);
+      await this.patronInviter.removePatron(patron);
+      this.client.emit("guildMemberUpdate", targetUser, targetUser);
+  
+      console.log(`[Button action by ${user.username}] ${targetUser.user.username} resetted!`);
     });
   }
 
