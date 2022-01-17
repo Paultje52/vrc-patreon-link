@@ -14,6 +14,12 @@ describe("Button tests", () => {
 
     expect(ids.addProfileYesId).toBe("add-profile-yes");
     expect(ids.addProfileNoId).toBe("add-profile-no");
+    
+    expect(ids.adminPanelIds.restartId).toBe("restart");
+    expect(ids.adminPanelIds.forceUploadId).toBe("force-upload");
+    expect(ids.adminPanelIds.exportListId).toBe("export-list");
+    expect(ids.adminPanelIds.resetSpecifiedUserId).toBe("reset-specified-user");
+    expect(ids.adminPanelIds.overrideSpecifiedUserId).toBe("override-specified-user");
   });
 
   test("addLink", () => {
@@ -34,6 +40,15 @@ describe("Button tests", () => {
 
   test("addProfileNo", () => {
     expect(buttons.addProfileNo.customId).toBe(ids.addProfileNoId);
+  });
+
+  test("adminPanelButtons", () => {
+    expect(buttons.adminPanelButtons.restart.customId).toBe(ids.adminPanelIds.restartId);
+    expect(buttons.adminPanelButtons.forceUpload.customId).toBe(ids.adminPanelIds.forceUploadId);
+    expect(buttons.adminPanelButtons.exportList.customId).toBe(ids.adminPanelIds.exportListId);
+    expect(buttons.adminPanelButtons.resetSpecifiedUser.customId).toBe(ids.adminPanelIds.resetSpecifiedUserId);
+    expect(buttons.adminPanelButtons.overrideSpecifiedUser.customId).toBe(ids.adminPanelIds.overrideSpecifiedUserId);
+    expect(buttons.adminPanelButtons.cancel("123").customId).toBe("cancel-123");
   });
 
 });
@@ -128,6 +143,44 @@ describe("Messages present", () => {
   });
   test("confirmUser", () => {
     expect(messages.confirmUser).toBeDefined();
+  });
+  
+  test("adminPanelEmbed", () => {
+    expect(messages.adminPanelEmbed).toBeDefined();
+  });
+  test("adminPanelLoadingEmbed", () => {
+    expect(messages.adminPanelLoadingEmbed).toBeDefined();
+  });
+
+  
+  test("adminSendGetUserEmbed", () => {
+    expect(messages.adminSendGetUserEmbed).toBeDefined();
+  });
+  test("adminGetUserCancelledEmbed", () => {
+    expect(messages.adminGetUserCancelledEmbed).toBeDefined();
+  });
+  test("adminGetUserInvalidUserEmbed", () => {
+    expect(messages.adminGetUserInvalidUserEmbed).toBeDefined();
+  });
+  test("adminSendOverrideUserEmbed", () => {
+    expect(messages.adminSendOverrideUserEmbed).toBeDefined();
+  });
+  
+  test("adminConfirmForceUploadEmbed", () => {
+    expect(messages.adminConfirmForceUploadEmbed).toBeDefined();
+  });
+  test("adminConfirmResetEmbed", () => {
+    expect(messages.adminConfirmResetEmbed).toBeDefined();
+  });
+  test("adminConfirmOverrideEmbed", () => {
+    expect(messages.adminConfirmOverrideEmbed).toBeDefined();
+  });
+  
+  test("adminResetToPatronEmbed", () => {
+    expect(messages.adminResetToPatronEmbed).toBeDefined();
+  });
+  test("adminOverrideToPatronEmbed", () => {
+    expect(messages.adminOverrideToPatronEmbed).toBeDefined();
   });
 
 });
