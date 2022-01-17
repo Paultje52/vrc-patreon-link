@@ -2,9 +2,9 @@ import { ButtonInteraction, GuildMember, Interaction, Message, MessageActionRow,
 import DiscordClient from "../discord/DiscordClient";
 import PatronInviter from "../patreon/PatronInviter";
 import PatronUpdater from "../patreon/PatronUpdater";
-import { adminPanelButtons, buttonIds } from "./buttons";
+import { adminPanelButtons, buttonIds, removeLink } from "./buttons";
 import Logger from "./Logger";
-import { adminGetUserCancelledEmbed, adminGetUserInvalidUserEmbed, adminPanelEmbed, adminPanelLoadingEmbed, adminSendGetUserEmbed, adminSendOverrideUserEmbed, invalidLinkEmbed, invalidUseridEmbed } from "./messages";
+import { adminConfirmForceUploadEmbed, adminConfirmOverrideEmbed, adminConfirmResetEmbed, adminGetUserCancelledEmbed, adminGetUserInvalidUserEmbed, adminOverrideToPatronEmbed, adminPanelEmbed, adminPanelLoadingEmbed, adminResetToPatronEmbed, adminSendGetUserEmbed, adminSendOverrideUserEmbed, invalidLinkEmbed, invalidUseridEmbed } from "./messages";
 import * as fs from "fs/promises";
 import path = require("path");
 import { oldUserRegex, userRegex } from "./regex";
@@ -132,20 +132,23 @@ export default class AdminPanel {
     console.log(`[Button action by ${user.username}] Restarting...`);
     setTimeout(() => {
       process.exit(0);
-    });
+    }, 1000);
   }
 
   private async forceUploadButtonClick(user: User) {
-    console.log(`[Button action by ${user.username}] Force uploading...`);
     await this.patronUploader.syncWithVrChat(true);
-    console.log(`[Button action by ${user.username}] Force upload done!`);
+    console.log(`[Button action by ${user.username}] Force uploaded!`);
 
-    // this.updateMessage();
+    this.channel.send({
+      embeds: [adminConfirmForceUploadEmbed]
+    }).then((msg: Message) => {
+      setTimeout(() => {
+        msg.delete();
+      }, 5000);
+    });
   }
 
   private async exportListButtonClick(user: User) {
-    console.log(`[Button action by ${user.username}] Exporting patron list...`);
-
     let list = await this.patronUploader.getPatronList();
 
     let fullPath = path.join(__dirname, "patrons.txt");
@@ -157,7 +160,7 @@ export default class AdminPanel {
     });
     await fs.rm(fullPath);
     
-    console.log(`[Button action by ${user.username}] Exported patron list in channel!`);
+    console.log(`[Button action by ${user.username}] Exported patron list in admin channel!`);
   }
 
   private async getSpecifiedUser(user: User, callback: (specifiedUser: GuildMember) => void) {
@@ -232,14 +235,23 @@ export default class AdminPanel {
   private resetSpecifiedUserButtonClick(user: User) {
     this.getSpecifiedUser(user, async (targetUser: GuildMember) => {
       if (!targetUser) return;
-
-      console.log(`[Button action by ${user.username}] Resetting ${targetUser.user.username}...`);
   
       let patron = this.client.getPatron(targetUser);
       await this.patronInviter.removePatron(patron);
       this.client.emit("guildMemberUpdate", targetUser, targetUser);
   
-      console.log(`[Button action by ${user.username}] ${targetUser.user.username} resetted!`);
+      console.log(`[Button action by ${user.username}] User ${targetUser.user.username} resetted!`);
+      this.channel.send({
+        embeds: [adminConfirmResetEmbed(targetUser.user.username)]
+      }).then((msg: Message) => {
+        setTimeout(() => {
+          msg.delete();
+        }, 10000);
+      });
+
+      patron.sendMessage({
+        embeds: [adminResetToPatronEmbed]
+      }).catch(() => null);
     });
   }
 
@@ -324,13 +336,26 @@ export default class AdminPanel {
           });
           return;
         }
-
-        console.log(`[Button action by ${user.username}] Overriding ${targetUser.user.username}...`);
   
         let patron = this.client.getPatron(targetUser);
         await patron.setUserid(userId, this.database);
-    
-        console.log(`[Button action by ${user.username}] ${targetUser.user.username} set to ${await this.vrChat.getUsernameFromId(userId)}!`);
+        let username = await this.vrChat.getUsernameFromId(userId);
+
+        console.log(`[Button action by ${user.username}] Overrided ${targetUser.user.username} to ${username}!`);
+        this.channel.send({
+          embeds: [adminConfirmOverrideEmbed(targetUser.user.username, username)]
+        }).then((msg: Message) => {
+          setTimeout(() => {
+            msg.delete();
+          }, 10000);
+        });
+        
+        patron.sendMessage({
+          embeds: [adminOverrideToPatronEmbed(username, await this.vrChat.getAvatarFromId(userId), userId)],
+          components: [new MessageActionRow().addComponents(
+            removeLink
+          )]
+        }).catch(() => null);
 
       });
       // Remove message on end

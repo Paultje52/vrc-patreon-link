@@ -104,6 +104,40 @@ let adminSendOverrideUserEmbed = (username: string) => {
     .setDescription(`Please send the VRChat userlink to override the user \`${_parseInput(username)}\`.\n> Click the button below to cancel.`);
 }
 
+let adminConfirmForceUploadEmbed = new MessageEmbed()
+  .setTitle("Force uploaded!")
+  .setColor("#57F287")
+  .setDescription("The parons on VRChat are forcefully up-to-date!");
+
+let adminConfirmResetEmbed = (username: string) => {
+  return new MessageEmbed()
+    .setTitle("Reset user")
+    .setColor("#57F287")
+    .setDescription(`User \`${_parseInput(username)}\` resetted! If the user still has a patron role, the user will get invited again.`);
+}
+
+let adminConfirmOverrideEmbed = (discordUsername: string, vrChatUsername: string) => {
+  return new MessageEmbed()
+    .setTitle("Reset user")
+    .setColor("#57F287")
+    .setDescription(`User \`${_parseInput(discordUsername)}\` is now linked to \`${_parseInput(vrChatUsername)}\`!`);
+}
+
+let adminResetToPatronEmbed = new MessageEmbed()
+  .setTitle("Link reset")
+  .setColor("#EB459E")
+  .setDescription("An admin resetted the link to a patron. If you're still a patron, you'll recieve a new link message soon!");
+
+let adminOverrideToPatronEmbed = (vrChatUsername: string, vrChatProfileUrl: string, vrChatId: string) => {
+  return new MessageEmbed()
+    .setTitle("Link overriden")
+    .setColor("#EB459E")
+    .setThumbnail(vrChatProfileUrl)
+    .setDescription(`An admin overrode your patron link.\nUsername: **${_parseInput(vrChatUsername)}**\n> To remove the link, click the button below.`)
+    .setFooter({
+      text: vrChatId
+    });
+}
 
 export {
   dmsClosedEmbed,
@@ -126,5 +160,12 @@ export {
   adminSendGetUserEmbed,
   adminGetUserCancelledEmbed,
   adminGetUserInvalidUserEmbed,
-  adminSendOverrideUserEmbed
+  adminSendOverrideUserEmbed,
+
+  adminConfirmForceUploadEmbed,
+  adminConfirmResetEmbed,
+  adminConfirmOverrideEmbed,
+
+  adminResetToPatronEmbed,
+  adminOverrideToPatronEmbed
 }
