@@ -9,7 +9,7 @@
   },
   "name": "vrc-patreon-link",
   "description": "Automatically uploads a list of patrons to VRChat everytime a patron joins or leaves, without reuploading the world. For use with https://github.com/Miner28/AvatarImageReader",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "src/index.ts",
   "scripts": {
     "dev": "nodemon src/index.ts",
