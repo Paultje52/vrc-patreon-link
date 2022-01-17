@@ -7,7 +7,7 @@ export default function checkEnvironmentVariables() {
   if (!process.env.PATREON_CHANNEL) throw new Error("PATREON_CHANNEL in .env file is not set!");
 
   // Staff panel
-  if (!process.env.STAFF_PANEL_CHANNEL) throw new Error("STAFF_PANEL_CHANNEL in .env file is not set!");
+  if (!process.env.ADMIN_PANEL_CHANNEL) throw new Error("ADMIN_PANEL_CHANNEL in .env file is not set!");
 
   // VRChat stuff
   if (!process.env.VR_CHAT_USERNAME) throw new Error("VR_CHAT_USERNAME in .env file is not set!");
