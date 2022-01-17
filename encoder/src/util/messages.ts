@@ -83,9 +83,9 @@ let adminPanelLoadingEmbed = new MessageEmbed()
   .setColor("#5865F2")
   .setDescription("Loading...");
 
-let adminSendGetUserEmbed = new MessageEmbed()
-  .setTitle("User reset")
-  .setColor("#ED4245")
+  let adminSendGetUserEmbed = new MessageEmbed()
+  .setTitle("Specify User")
+  .setColor("#FEE75C")
   .setDescription("Please send the Discord User ID of the target user.\nNeed help? Look [here](https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-).\n> Click the button below to cancel.");
 let adminGetUserCancelledEmbed = new MessageEmbed()
   .setTitle("Cancelled!")
@@ -97,6 +97,13 @@ let adminGetUserInvalidUserEmbed = (invalidUser: string) => {
     .setColor("#ED4245")
     .setDescription(`The user \`${_parseInput(invalidUser)}\` could not be found. Try again by clicking the button.`);
 }
+let adminSendOverrideUserEmbed = (username: string) => {
+  return new MessageEmbed()
+    .setTitle("Override user")
+    .setColor("#EB459E")
+    .setDescription(`Please send the VRChat userlink to override the user \`${_parseInput(username)}\`.\n> Click the button below to cancel.`);
+}
+
 
 export {
   dmsClosedEmbed,
@@ -118,5 +125,6 @@ export {
 
   adminSendGetUserEmbed,
   adminGetUserCancelledEmbed,
-  adminGetUserInvalidUserEmbed
+  adminGetUserInvalidUserEmbed,
+  adminSendOverrideUserEmbed
 }

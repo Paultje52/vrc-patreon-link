@@ -4,24 +4,31 @@ import PatronInviter from "../patreon/PatronInviter";
 import PatronUpdater from "../patreon/PatronUpdater";
 import { adminPanelButtons, buttonIds } from "./buttons";
 import Logger from "./Logger";
-import { adminGetUserCancelledEmbed, adminGetUserInvalidUserEmbed, adminPanelEmbed, adminPanelLoadingEmbed, adminSendGetUserEmbed } from "./messages";
+import { adminGetUserCancelledEmbed, adminGetUserInvalidUserEmbed, adminPanelEmbed, adminPanelLoadingEmbed, adminSendGetUserEmbed, adminSendOverrideUserEmbed, invalidLinkEmbed, invalidUseridEmbed } from "./messages";
 import * as fs from "fs/promises";
 import path = require("path");
+import { oldUserRegex, userRegex } from "./regex";
+import VrChat from "../vrchat/VrChat";
+import Keyv = require("keyv");
 
 export default class AdminPanel {
 
   private client: DiscordClient;
   private patronUploader: PatronUpdater;
   private patronInviter: PatronInviter;
+  private vrChat: VrChat;
+  private database: Keyv;
 
   private msg: Message;
   private channel: TextChannel;
   private logs: string[] = [];
 
-  constructor(client: DiscordClient, patronUploader: PatronUpdater, patronInviter: PatronInviter, logger: Logger) {
+  constructor(client: DiscordClient, patronUploader: PatronUpdater, patronInviter: PatronInviter, logger: Logger, vrChat: VrChat, database: Keyv) {
     this.client = client;
     this.patronUploader = patronUploader;
     this.patronInviter = patronInviter;
+    this.vrChat = vrChat;
+    this.database = database;
 
     let updateTimeout: NodeJS.Timeout;
     logger.onLog((log: string) => {
@@ -224,6 +231,8 @@ export default class AdminPanel {
 
   private resetSpecifiedUserButtonClick(user: User) {
     this.getSpecifiedUser(user, async (targetUser: GuildMember) => {
+      if (!targetUser) return;
+
       console.log(`[Button action by ${user.username}] Resetting ${targetUser.user.username}...`);
   
       let patron = this.client.getPatron(targetUser);
@@ -234,6 +243,102 @@ export default class AdminPanel {
     });
   }
 
-  private async overrideSpecifiedUserButtonClick(user: User) {}
+  private async overrideSpecifiedUserButtonClick(user: User) {
+    this.getSpecifiedUser(user, async (targetUser: GuildMember) => {
+      if (!targetUser) return;
+
+      let cancelButton = adminPanelButtons.cancel(user.id);
+
+      let msg = await this.channel.send({
+        embeds: [adminSendOverrideUserEmbed(targetUser.user.username)],
+        components: [new MessageActionRow().addComponents(
+          cancelButton
+        )]
+      });
+
+      // Collectors
+      let buttonCollector = msg.createMessageComponentCollector({
+        filter: (i) => i.user.id === user.id,
+        time: 1000*30
+      });
+      let messageCollector = this.channel.createMessageCollector({
+        filter: (m) => m.author.id === user.id,
+        time: 1000*30
+      });
+
+      // Cancel button
+      buttonCollector.on("collect", (i) => {
+        let buttonInteraction = <ButtonInteraction> i;
+
+        if (buttonInteraction.customId !== cancelButton.customId) return;
+
+        buttonInteraction.deferUpdate();
+        messageCollector.stop();
+
+        this.channel.send({
+          embeds: [adminGetUserCancelledEmbed]
+        }).then(msg => {
+          setTimeout(() => {
+            msg.delete();
+          }, 5000);
+        });
+
+        return;
+      });
+
+      // UserID collector
+      messageCollector.on("collect", async (m) => {
+        m.delete();
+        messageCollector.stop();
+
+        let matches = m.content.match(userRegex);
+        if (!matches) {
+          // Check for old userIds, because VRChat cannot make it easy for one *** time...
+          matches = m.content.match(oldUserRegex);
+    
+          if (!matches) {
+            this.channel.send({
+              embeds: [ invalidLinkEmbed(m.content) ]
+            }).then((m) => {
+              setTimeout(() => {
+                m.delete();
+              }, 5000);
+            });
+            return;
+          }
+    
+          matches[0] = matches[0].replace("vrchat.com/home/user/", "")
+            .split("/").join(""); // Replace multiple
+        }
+    
+        let userId = matches[0];
+        let exists = await this.vrChat.userExists(userId);
+        
+        if (!exists) {
+          this.channel.send({
+            embeds: [ invalidUseridEmbed(userId) ]
+          }).then((m) => {
+            setTimeout(() => {
+              m.delete();
+            }, 5000);
+          });
+          return;
+        }
+
+        console.log(`[Button action by ${user.username}] Overriding ${targetUser.user.username}...`);
+  
+        let patron = this.client.getPatron(targetUser);
+        await patron.setUserid(userId, this.database);
+    
+        console.log(`[Button action by ${user.username}] ${targetUser.user.username} set to ${await this.vrChat.getUsernameFromId(userId)}!`);
+
+      });
+      // Remove message on end
+      messageCollector.on("end", () => {
+        msg.delete();
+      });
+
+    });
+  }
 
 }

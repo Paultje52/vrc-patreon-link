@@ -36,7 +36,7 @@ let vrChat = new VrChat({
 });
 let patronUpdater = new PatronUpdater(client, database, vrChat); // The patron updater is responsible for updating the patrons
 let patronInviter = new PatronInviter(client, database, vrChat); // If a new patron is found, the patron inviter is responsible for inviting them, including handling message buttons 
-let adminPanel = new AdminPanel(client, patronUpdater, patronInviter, logger); // The admin panel is responsible for handling the admin commands
+let adminPanel = new AdminPanel(client, patronUpdater, patronInviter, logger, vrChat, database); // The admin panel is responsible for handling the admin commands
 
 // Log when the client is ready!
 client.on("ready", async () => {
