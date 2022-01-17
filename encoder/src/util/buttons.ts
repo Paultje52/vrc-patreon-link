@@ -76,7 +76,15 @@ let adminPanelButtons = {
     .setCustomId(buttonIds.adminPanelIds.overrideSpecifiedUserId)
     .setLabel("Override specified user")
     .setEmoji("🔗")
-    .setStyle("SECONDARY")
+    .setStyle("SECONDARY"),
+
+  cancel: (id: string) => {
+    return new MessageButton()
+      .setCustomId(`cancel-${id}`)
+      .setLabel("Cancel")
+      .setEmoji("❌")
+      .setStyle("SECONDARY");
+  }
 }
 
 export {

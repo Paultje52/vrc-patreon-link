@@ -36,7 +36,7 @@ export default class Patron {
       <USER_ID> (String) - VRChat profile ID
     */
 
-    if (user === undefined) return linkStatuses.notInvited;
+    if (user === undefined || user === 0) return linkStatuses.notInvited;
     else if (user === 1) return linkStatuses.invited;
     else if (user === 2) return linkStatuses.waitingForLink;
     else if (user === 3) return linkStatuses.waitingOnConfirmation;

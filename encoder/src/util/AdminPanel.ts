@@ -1,10 +1,10 @@
-import { ButtonInteraction, Interaction, Message, MessageActionRow, TextChannel, User } from "discord.js";
+import { ButtonInteraction, GuildMember, Interaction, Message, MessageActionRow, TextChannel, User } from "discord.js";
 import DiscordClient from "../discord/DiscordClient";
 import PatronInviter from "../patreon/PatronInviter";
 import PatronUpdater from "../patreon/PatronUpdater";
 import { adminPanelButtons, buttonIds } from "./buttons";
 import Logger from "./Logger";
-import { adminPanelEmbed, adminPanelLoadingEmbed } from "./messages";
+import { adminPanelEmbed, adminPanelLoadingEmbed, adminResetCancelledEmbed, adminResetInvalidUserEmbed, adminSendResetEmbed } from "./messages";
 import * as fs from "fs/promises";
 import path = require("path");
 
@@ -153,7 +153,79 @@ export default class AdminPanel {
     console.log(`[Button action by ${user.username}] Exported patron list in channel!`);
   }
 
-  private async resetSpecifiedUserButtonClick(user: User) {}
+  private async resetSpecifiedUserButtonClick(user: User) {
+    let cancelButton = adminPanelButtons.cancel(user.id);
+
+    let msg = await this.channel.send({
+      content: `<@${user.id}>`,
+      embeds: [adminSendResetEmbed],
+      components: [new MessageActionRow().addComponents(
+        cancelButton
+      )]
+    });
+
+    // Collectors
+    let buttonCollector = msg.createMessageComponentCollector({
+      filter: (i) => i.user.id === user.id,
+      time: 1000*30
+    });
+    let messageCollector = this.channel.createMessageCollector({
+      filter: (m) => m.author.id === user.id,
+      time: 1000*30
+    });
+
+    // Cancel button
+    buttonCollector.on("collect", (i) => {
+      let buttonInteraction = <ButtonInteraction> i;
+
+      if (buttonInteraction.customId !== cancelButton.customId) return;
+
+      buttonInteraction.deferUpdate();
+      messageCollector.stop();
+
+      this.channel.send({
+        embeds: [adminResetCancelledEmbed]
+      }).then(msg => {
+        setTimeout(() => {
+          msg.delete();
+        }, 5000);
+      });
+
+      return;
+    });
+
+    // UserID collector
+    messageCollector.on("collect", async (m) => {
+      m.delete();
+      messageCollector.stop();
+
+      let targetUser = await msg.guild.members.fetch(m.content)
+        .catch(() => undefined);
+      if (!targetUser) {
+        this.channel.send({
+          embeds: [adminResetInvalidUserEmbed(m.content)]
+        }).then(msg => {
+          setTimeout(() => {
+            msg.delete();
+          }, 10000);
+        });
+
+        return;
+      }
+      
+      console.log(`[Button action by ${user.username}] Resetting ${targetUser.user.username}...`);
+
+      let patron = this.client.getPatron(targetUser);
+      await this.patronInviter.removePatron(patron);
+      this.client.emit("guildMemberUpdate", targetUser, targetUser);
+
+      console.log(`[Button action by ${user.username}] ${targetUser.user.username} resetted!`);
+    });
+    // Remove message on end
+    messageCollector.on("end", () => {
+      msg.delete();
+    });
+  }
 
   private async overrideSpecifiedUserButtonClick(user: User) {}
 

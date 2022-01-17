@@ -25,6 +25,10 @@ export default class PatronInviter {
     this.registerEvents();
   }
 
+  public removePatron(patron: Patron): Promise<void> {
+    return patron.setLinkStatus(linkStatuses.notInvited, this.database);
+  }
+
   public inviteNewPatrons(patrons: Patron[]) {
     for (let patron of patrons) {
       this.inviteNewPatron(patron);
