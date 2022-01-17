@@ -33,11 +33,7 @@ export default class PatronUpdater {
     return patronsToUpdate;
   }
 
-  public async syncWithVrChat(force?: boolean): Promise<void> {
-    if (this.isUpdating && !force) return console.warn("Already syncing - Why are you trying to sync so fast?");
-    this.isUpdating = true;
-    console.debug("Syncing patrons with VRChat...");
-
+  public async getPatronList(): Promise<string> {
     // Fetch members and roles from discord
     let guild = this.client.getMainGuild();
     let members = await guild.members.fetch();
@@ -69,14 +65,27 @@ export default class PatronUpdater {
     if (!exportRolesString) {
       console.warn("Nothing to upload yet!");
       this.isUpdating = false;
-      return;
+      return "";
     }
+
+    return exportRolesString;
+  }
+
+  public async syncWithVrChat(force?: boolean): Promise<void> {
+    if (this.isUpdating && !force) return console.warn("Already syncing - Why are you trying to sync so fast?");
+    this.isUpdating = true;
+    console.debug("Syncing patrons with VRChat...");
+
+    // Get export string
+    let exportRolesString = await this.getPatronList();
+    this.prevImageData = exportRolesString;
+    
     if (exportRolesString === this.prevImageData && !force) {
       console.debug("No changes detected, skipping...");
       this.isUpdating = false;
       return;
     }
-    this.prevImageData = exportRolesString;
+
     console.info(`==[EXPORT]==\n${exportRolesString}\n==[EXPORT]==`);
 
     // Let's use our beautiful code to export the data to an image. Want to know more? Look at GitHub!
