@@ -14,7 +14,8 @@ export default class DiscordClient extends Client {
     super({
       intents: [
         "GUILD_MEMBERS",
-        "DIRECT_MESSAGES"
+        "DIRECT_MESSAGES",
+        "GUILD_MESSAGES"
       ],
       partials: [
         "CHANNEL"

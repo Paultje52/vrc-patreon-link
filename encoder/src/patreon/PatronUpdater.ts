@@ -33,11 +33,7 @@ export default class PatronUpdater {
     return patronsToUpdate;
   }
 
-  public async syncWithVrChat(): Promise<void> {
-    if (this.isUpdating) return console.warn("Already syncing - Why are you trying to sync so fast?");
-    this.isUpdating = true;
-    console.debug("Syncing patrons with VRChat...");
-
+  public async getPatronList(): Promise<string> {
     // Fetch members and roles from discord
     let guild = this.client.getMainGuild();
     let members = await guild.members.fetch();
@@ -66,17 +62,34 @@ export default class PatronUpdater {
     // The keys don't matter here, they are just needed during the indexing phase
     // For more information about the format, look at GitHub!
     let exportRolesString = this.convertExportRoles(exportRoles);
-    if (!exportRolesString) {
-      console.warn("No export roles found!");
-      this.isUpdating = false;
-      return;
+    if (!exportRolesString || exportRolesString.length === 0) {
+      console.warn("Nothing to upload yet!");
+      return "";
     }
-    if (exportRolesString === this.prevImageData) {
-      console.debug("No changes detected, skipping...");
+
+    return exportRolesString;
+  }
+
+  public async syncWithVrChat(force?: boolean): Promise<void> {
+    if (this.isUpdating && !force) return console.warn("Already syncing - Why are you trying to sync so fast?");
+    else if (this.isUpdating) console.warn("Already syncing - Forcing the bot to do it again. If error occurs, please restart the bot!");
+    this.isUpdating = true;
+    console.debug("Syncing patrons with VRChat...");
+
+    // Get export string
+    let exportRolesString = await this.getPatronList();
+    if (!exportRolesString || exportRolesString.length === 0) {
       this.isUpdating = false;
       return;
     }
     this.prevImageData = exportRolesString;
+    
+    if (exportRolesString === this.prevImageData && !force) {
+      console.debug("No changes detected, skipping...");
+      this.isUpdating = false;
+      return;
+    }
+
     console.info(`==[EXPORT]==\n${exportRolesString}\n==[EXPORT]==`);
 
     // Let's use our beautiful code to export the data to an image. Want to know more? Look at GitHub!

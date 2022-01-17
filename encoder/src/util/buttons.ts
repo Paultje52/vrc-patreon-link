@@ -7,6 +7,14 @@ const buttonIds = {
 
   addProfileYesId: "add-profile-yes",
   addProfileNoId: "add-profile-no",
+
+  adminPanelIds: {
+    restartId: "restart",
+    forceUploadId: "force-upload",
+    exportListId: "export-list",
+    resetSpecifiedUserId: "reset-specified-user",
+    overrideSpecifiedUserId: "override-specified-user"
+  }
 }
 
 let addLink = new MessageButton()
@@ -39,6 +47,46 @@ let addProfileNo = new MessageButton()
   .setEmoji("✖️")
   .setStyle("DANGER");
 
+let adminPanelButtons = {
+  restart: new MessageButton()
+    .setCustomId(buttonIds.adminPanelIds.restartId)
+    .setLabel("Restart")
+    .setEmoji("🔌")
+    .setStyle("DANGER"),
+  
+  forceUpload: new MessageButton()
+    .setCustomId(buttonIds.adminPanelIds.forceUploadId)
+    .setLabel("Force upload")
+    .setEmoji("📤")
+    .setStyle("PRIMARY"),
+
+  exportList: new MessageButton()
+    .setCustomId(buttonIds.adminPanelIds.exportListId)
+    .setLabel("Export list")
+    .setEmoji("📄")
+    .setStyle("PRIMARY"),
+
+  resetSpecifiedUser: new MessageButton()
+    .setCustomId(buttonIds.adminPanelIds.resetSpecifiedUserId)
+    .setLabel("Reset specified user")
+    .setEmoji("🗑️")
+    .setStyle("SECONDARY"),
+
+  overrideSpecifiedUser: new MessageButton()
+    .setCustomId(buttonIds.adminPanelIds.overrideSpecifiedUserId)
+    .setLabel("Override specified user")
+    .setEmoji("🔗")
+    .setStyle("SECONDARY"),
+
+  cancel: (id: string) => {
+    return new MessageButton()
+      .setCustomId(`cancel-${id}`)
+      .setLabel("Cancel")
+      .setEmoji("❌")
+      .setStyle("SECONDARY");
+  }
+}
+
 export {
   addLink,
   addLinkServer,
@@ -47,5 +95,6 @@ export {
   addProfileYes,
   addProfileNo,
 
+  adminPanelButtons,
   buttonIds
 }

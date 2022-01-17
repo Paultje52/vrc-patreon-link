@@ -9,6 +9,7 @@ export default class Logger {
 
   private loggerTimezone: string;
   private writeStream: WriteStream;
+  private _onLog: (log: string) => void = (_log: string) => {};
 
   constructor(options: LoggerOptions) {
     if (!options.enabled) return;
@@ -19,6 +20,10 @@ export default class Logger {
     });
   }
 
+  public onLog(func: (log: string) => void) {
+    this._onLog = func;
+  }
+
   private _overrideConsoleMethods(): void {
     let oldLog = console.log;
     console.log = (log: any) => {
@@ -27,7 +32,10 @@ export default class Logger {
         showHidden: true,
         depth: null
       });
-      this.writeStream.write(`[${this.getDateFormat()}] [LOG] ${parsedLog}\n`);
+      parsedLog = `[${this.getDateFormat()}] [LOG] ${parsedLog}\n`;
+
+      this.writeStream.write(parsedLog);
+      this._onLog(parsedLog)
     }
     
     let oldWarn = console.warn;
@@ -37,7 +45,10 @@ export default class Logger {
         showHidden: true,
         depth: null
       });
-      this.writeStream.write(`[${this.getDateFormat()}] [WARN] ${parsedLog}\n`);
+      parsedLog = `[${this.getDateFormat()}] [WARN] ${parsedLog}\n`;
+
+      this.writeStream.write(parsedLog);
+      this._onLog(parsedLog)
     }
     
     let oldDebug = console.debug;
@@ -47,7 +58,10 @@ export default class Logger {
         showHidden: true,
         depth: null
       });
-      this.writeStream.write(`[${this.getDateFormat()}] [DEBUG] ${parsedLog}\n`);
+      parsedLog = `[${this.getDateFormat()}] [DEBUG] ${parsedLog}\n`;
+
+      this.writeStream.write(parsedLog);
+      this._onLog(parsedLog)
     }
   }
 
