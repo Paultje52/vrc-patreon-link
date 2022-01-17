@@ -5,6 +5,8 @@ import PatronUpdater from "../patreon/PatronUpdater";
 import { adminPanelButtons, buttonIds } from "./buttons";
 import Logger from "./Logger";
 import { adminPanelEmbed, adminPanelLoadingEmbed } from "./messages";
+import * as fs from "fs/promises";
+import path = require("path");
 
 export default class AdminPanel {
 
@@ -13,6 +15,7 @@ export default class AdminPanel {
   private patronInviter: PatronInviter;
 
   private msg: Message;
+  private channel: TextChannel;
   private logs: string[] = [];
 
   constructor(client: DiscordClient, patronUploader: PatronUpdater, patronInviter: PatronInviter, logger: Logger) {
@@ -54,6 +57,7 @@ export default class AdminPanel {
     }
 
     this.msg = msg;
+    this.channel = channel;
     this.updateMessage();
   }
 
@@ -132,7 +136,22 @@ export default class AdminPanel {
     // this.updateMessage();
   }
 
-  private async exportListButtonClick(user: User) {}
+  private async exportListButtonClick(user: User) {
+    console.log(`[Button action by ${user.username}] Exporting patron list...`);
+
+    let list = await this.patronUploader.getPatronList();
+
+    let fullPath = path.join(__dirname, "patrons.txt");
+    await fs.writeFile(fullPath, list);
+    await this.channel.send({
+      files: [
+        fullPath
+      ]
+    });
+    await fs.rm(fullPath);
+    
+    console.log(`[Button action by ${user.username}] Exported patron list in channel!`);
+  }
 
   private async resetSpecifiedUserButtonClick(user: User) {}
 
