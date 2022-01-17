@@ -48,7 +48,10 @@ describe("Check environment variables", () => {
       DISCORD_TOKEN: "token",
       GUILD_ID: "guild",
       ROLE_ID: "role",
-      PATREON_CHANNEL: "channel"
+      PATREON_CHANNEL: "channel",
+
+      ADMIN_PANEL_CHANNEL: "channel",
+      ADMIN_PANEL_MESSAGE_ID: "id"
     };
     expect(checkEnvironmentVariables).toThrow();
   });
@@ -59,6 +62,9 @@ describe("Check environment variables", () => {
       GUILD_ID: "guild",
       ROLE_ID: "role",
       PATREON_CHANNEL: "channel",
+
+      ADMIN_PANEL_CHANNEL: "channel",
+      ADMIN_PANEL_MESSAGE_ID: "id",
 
       VR_CHAT_USERNAME: "username",
       VR_CHAT_PASSWORD: "password",
@@ -73,6 +79,9 @@ describe("Check environment variables", () => {
       GUILD_ID: "guild",
       ROLE_ID: "role",
       PATREON_CHANNEL: "channel",
+
+      ADMIN_PANEL_CHANNEL: "channel",
+      ADMIN_PANEL_MESSAGE_ID: "id",
 
       VR_CHAT_USERNAME: "username",
       VR_CHAT_PASSWORD: "password",

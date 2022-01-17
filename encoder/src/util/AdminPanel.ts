@@ -44,16 +44,16 @@ export default class AdminPanel {
   
   public async start() {
     let guild = this.client.guilds.cache.get(process.env.GUILD_ID);
-    let channel = await guild.channels.fetch(process.env.STAFF_PANEL_CHANNEL);
-    if (!(channel instanceof TextChannel)) throw new Error("STAFF_PANEL_CHANNEL is not a text channel!");
-    let msg = await channel.messages.fetch(process.env.STAFF_PANEL_MESSAGE_ID).catch(() => null);
+    let channel = await guild.channels.fetch(process.env.ADMIN_PANEL_CHANNEL);
+    if (!(channel instanceof TextChannel)) throw new Error("ADMIN_PANEL_CHANNEL is not a text channel!");
+    let msg = await channel.messages.fetch(process.env.ADMIN_PANEL_MESSAGE_ID).catch(() => null);
 
     if (!msg) {
       msg = await channel.send({
         embeds: [adminPanelLoadingEmbed]
       });
-      process.env.STAFF_PANEL_MESSAGE_ID = msg.id;
-      console.log(`Admin panel message ID set to ${msg.id} - Please save this in the environment variables as STAFF_PANEL_MESSAGE_ID`);
+      process.env.ADMIN_PANEL_MESSAGE_ID = msg.id;
+      console.log(`Admin panel message ID set to ${msg.id} - Please save this in the environment variables as ADMIN_PANEL_MESSAGE_ID`);
     }
 
     this.msg = msg;
