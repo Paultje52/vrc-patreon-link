@@ -17,6 +17,8 @@ The parser is the system that connects to AvatarImageReader to turn the output o
 6. Reference the Decoder behaviour from the Parser and vice versa.
 7. Enter the names for the roles you want to parse, and optionally set up TextMeshPro references to print lists of patrons to.
 
+![inspector](https://user-images.githubusercontent.com/24632962/149590785-aef83a29-9f83-407f-bbf7-89a4bf13cf9c.png)
+
 ## Usage
 Before using any of these functions you should check if `decodeFinished` is set to true. You can also set up a callback behaviour to run checks once decoding has finished.
 PatreonDecoder lives in the namespace `BocuD.PatreonParser`.

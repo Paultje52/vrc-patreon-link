@@ -17,18 +17,21 @@ let stillDmsClosedEmbed = new MessageEmbed()
 let welcomeMessageEmbed = new MessageEmbed()
   .setTitle("Welcome!")
   .setColor("#5865F2")
-  .setDescription(`Thanks for becoming a patron! In order to give you proper rewards inside the world, we'll need a link to your VRChat profile.\nPlease click the button below to get started with the setup!`);
+  .setDescription(`Thanks for becoming a patron! In order to give you proper rewards inside the world, we'll need a link to your VRChat profile.\nPlease click the button below to get started with the setup!`)
+  .setFooter({
+    text: "Cannot see the button? Update your Discord client!"
+  });
 
 let addVrChatLinkEmbed = new MessageEmbed()
   .setTitle("Setup your profile")
   .setColor("#57F287")
-  .setDescription("To setup your profile, please send your VRChat profile link below.")
+  .setDescription("To setup your profile, please send your VRChat profile link below.\n> Want help? Look [here](https://docs.google.com/document/d/19o0WiEGXCdBuMgOXHpb4brQJs8-0boYlWiZHtLc1i2M/edit)!")
 
 let acceptProfileEmbed = (username: string) => {
   return new MessageEmbed()
     .setTitle("Profile updated!")
     .setColor("#57F287")
-    .setDescription(`Your VRChat profile link has been updated. Welcome, **${_parseInput(username)}**!\n> To change your VRChat profile link, click the button below.`)
+    .setDescription(`Your VRChat profile link has been updated. Welcome, **${_parseInput(username)}**!\n_Please note that you'll have to restart your VRChat client for any changes to take effect._\n> To change your VRChat profile link, click the button below.`)
     .setFooter({
       text: "It can take up to five minutes for the changes to take effect."
     });

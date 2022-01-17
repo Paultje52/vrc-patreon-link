@@ -3,7 +3,7 @@ import { addLink, addLinkServer, addProfileNo, addProfileYes, buttonIds, removeL
 import { ButtonInteraction, Interaction, Message, MessageActionRow } from "discord.js";
 import Patron, { linkStatuses } from "./Patron";
 import DiscordClient from "../discord/DiscordClient";
-import { userRegex } from "../util/regex";
+import { oldUserRegex, userRegex } from "../util/regex";
 import VrChat from "../vrchat/VrChat";
 import * as Keyv from "keyv";
 import Queue from "../util/Queue";
@@ -205,10 +205,18 @@ export default class PatronInviter {
 
     let matches = message.content.match(userRegex);
     if (!matches) {
-      patron.sendMessage({
-        embeds: [ invalidLinkEmbed(message.content) ]
-      });
-      return;
+      // Check for old userIds, because VRChat cannot make it easy for one *** time...
+      matches = message.content.match(oldUserRegex);
+
+      if (!matches) {
+        patron.sendMessage({
+          embeds: [ invalidLinkEmbed(message.content) ]
+        });
+        return;
+      }
+
+      matches[0] = matches[0].replace("vrchat.com/home/user/", "")
+        .split("/").join(""); // Replace multiple
     }
 
     let userId = matches[0];
