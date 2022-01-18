@@ -82,13 +82,13 @@ export default class PatronUpdater {
       this.isUpdating = false;
       return;
     }
-    this.prevImageData = exportRolesString;
     
     if (exportRolesString === this.prevImageData && !force) {
       console.debug("No changes detected, skipping...");
       this.isUpdating = false;
       return;
     }
+    this.prevImageData = exportRolesString;
 
     console.info(`==[EXPORT]==\n${exportRolesString}\n==[EXPORT]==`);
 
