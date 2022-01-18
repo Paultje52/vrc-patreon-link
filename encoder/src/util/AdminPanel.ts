@@ -21,7 +21,7 @@ export default class AdminPanel {
 
   private msg: Message;
   private channel: TextChannel;
-  private logs: string[] = [];
+  private logs: {time: number, log: string}[] = [];
 
   constructor(client: DiscordClient, patronUploader: PatronUpdater, patronInviter: PatronInviter, logger: Logger, vrChat: VrChat, database: Keyv) {
     this.client = client;
@@ -34,11 +34,13 @@ export default class AdminPanel {
     logger.onLog((log: string) => {
       if (log.includes("[DEBUG]")) return;
 
-      this.logs.push(log
-        .split(" [LOG]").join("")
-        .split("'").join("")
-        .split("\"").join("")
-      );
+      this.logs.push({
+        time: Date.now(),
+        log: log
+          .split(" [LOG]").join("")
+          .split("'").join("")
+          .split("\"").join("")
+      });
 
       if (updateTimeout) clearTimeout(updateTimeout);
       updateTimeout = setTimeout(() => {
@@ -74,11 +76,11 @@ export default class AdminPanel {
       return;
     }
 
-    let parsedLogs = this.logs.join("");
+    let parsedLogs = this.logs.map(({time, log}) => `<t:${Math.round(time/1000)}:R> \`\`${log}\`\``).join("");
     parsedLogs = parsedLogs.substring(parsedLogs.length-1750);
 
     return this.msg.edit({
-      content: `\`\`\`toml\n${parsedLogs}\`\`\``,
+      content: parsedLogs,
       embeds: [adminPanelEmbed()],
       components: [new MessageActionRow().addComponents(
         adminPanelButtons.restart,

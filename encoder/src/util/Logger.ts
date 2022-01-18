@@ -32,9 +32,9 @@ export default class Logger {
         showHidden: true,
         depth: null
       });
-      parsedLog = `[${this.getDateFormat()}] [LOG] ${parsedLog}\n`;
+      parsedLog = `[LOG] ${parsedLog}\n`;
 
-      this.writeStream.write(parsedLog);
+      this.writeStream.write(`[${this.getDateFormat()}] ${parsedLog}`);
       this._onLog(parsedLog)
     }
     
@@ -45,9 +45,9 @@ export default class Logger {
         showHidden: true,
         depth: null
       });
-      parsedLog = `[${this.getDateFormat()}] [WARN] ${parsedLog}\n`;
+      parsedLog = `[WARN] ${parsedLog}\n`;
 
-      this.writeStream.write(parsedLog);
+      this.writeStream.write(`[${this.getDateFormat()}] ${parsedLog}`);
       this._onLog(parsedLog)
     }
     
@@ -58,9 +58,9 @@ export default class Logger {
         showHidden: true,
         depth: null
       });
-      parsedLog = `[${this.getDateFormat()}] [DEBUG] ${parsedLog}\n`;
+      parsedLog = `[DEBUG] ${parsedLog}\n`;
 
-      this.writeStream.write(parsedLog);
+      this.writeStream.write(`[${this.getDateFormat()}] ${parsedLog}`);
       this._onLog(parsedLog)
     }
   }
