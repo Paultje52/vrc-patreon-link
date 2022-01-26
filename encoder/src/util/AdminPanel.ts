@@ -22,6 +22,7 @@ export default class AdminPanel {
   private msg: Message;
   private channel: TextChannel;
   private logs: {time: number, log: string}[] = [];
+  private updateTimeout: NodeJS.Timeout
 
   constructor(client: DiscordClient, patronUploader: PatronUpdater, patronInviter: PatronInviter, logger: Logger, vrChat: VrChat, database: Keyv) {
     this.client = client;
@@ -30,32 +31,40 @@ export default class AdminPanel {
     this.vrChat = vrChat;
     this.database = database;
 
-    let updateTimeout: NodeJS.Timeout;
-    logger.onLog((log: string) => {
-      if (log.includes("[DEBUG]")) return;
+    setTimeout(async () => {
+      for (let i = 0; i < 10; i++) {
+        await new Promise((res) => setTimeout(res, 2000));
+        this.onLog("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum");
+      }
+    }, 5000);
 
-      this.logs.push({
-        time: Date.now(),
-        log: log
-          .split(" [LOG]").join("")
-          .split("'").join("")
-          .split("\"").join("")
-      });
+    logger.onLog(this.onLog.bind(this));
+    this.registerEvents();
+  }
 
-      if (updateTimeout) clearTimeout(updateTimeout);
-      updateTimeout = setTimeout(() => {
-        this.updateMessage();
-      }, 500);
+  private onLog(log: string): void {
+    if (log.includes("[DEBUG]")) return;
+
+    this.logs.push({
+      time: Date.now(),
+      log: log
+        .split(" [LOG]").join("")
+        .split("'").join("")
+        .split("\"").join("")
+        .split("\n").join("")
     });
 
-    this.registerEvents();
+    if (this.updateTimeout) clearTimeout(this.updateTimeout);
+    this.updateTimeout = setTimeout(() => {
+      this.updateMessage();
+    }, 500);
   }
   
   public async start() {
     let guild = this.client.guilds.cache.get(process.env.GUILD_ID);
     let channel = await guild.channels.fetch(process.env.ADMIN_PANEL_CHANNEL);
     if (!(channel instanceof TextChannel)) throw new Error("ADMIN_PANEL_CHANNEL is not a text channel!");
-    let msg = await channel.messages.fetch(process.env.ADMIN_PANEL_MESSAGE_ID).catch(() => null);
+    let msg = await channel.messages.fetch(process.env.ADMIN_PANEL_MESSAGE_ID || "123").catch(() => null);
 
     if (!msg) {
       msg = await channel.send({
@@ -70,17 +79,28 @@ export default class AdminPanel {
     this.updateMessage();
   }
 
+  private parseLogs(): string {
+    let formatedLogs = [...this.logs].map(({time, log}) => `<t:${Math.round(time/1000)}:R> \`\`${log}\`\``).reverse();
+    let parsed = [];
+    let parsedLength = 0;
+
+    for (let log of formatedLogs) {
+      if (parsedLength + log.length > 1750) break;
+      parsed.push(log);
+      parsedLength += log.length;
+    }
+
+    return parsed.reverse().join("\n");
+  }
+
   private async updateMessage() {
     if (!this.msg) {
       console.warn("Admin panel message is not set yet!");
       return;
     }
 
-    let parsedLogs = this.logs.map(({time, log}) => `<t:${Math.round(time/1000)}:R> \`\`${log}\`\``).join("");
-    parsedLogs = parsedLogs.substring(parsedLogs.length-1750);
-
     return this.msg.edit({
-      content: parsedLogs,
+      content: this.parseLogs(),
       embeds: [adminPanelEmbed()],
       components: [new MessageActionRow().addComponents(
         adminPanelButtons.restart,
