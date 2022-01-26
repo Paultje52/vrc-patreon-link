@@ -4,10 +4,11 @@ import { createReadStream } from "fs";
 import * as path from "path";
 import * as crypto from "crypto";
 import { VrChatUploaderOptions } from "../VrcPatreonLinkTypes";
+import vrChatUrls from "./VrChatUrls";
 
 export default class VrChatUploader {
 
-  private baseUrl = "https://api.vrchat.cloud/api/1";
+  private baseUrl = vrChatUrls.base;
   private initialHeaders = {
     "accept": "*/*",
     "Content-Type": "application/json;charset=utf-8",
