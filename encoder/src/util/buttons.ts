@@ -13,7 +13,8 @@ const buttonIds = {
     forceUploadId: "force-upload",
     exportListId: "export-list",
     resetSpecifiedUserId: "reset-specified-user",
-    overrideSpecifiedUserId: "override-specified-user"
+    overrideSpecifiedUserId: "override-specified-user",
+    resetSyncState: "reset-sync-state",
   }
 }
 
@@ -84,7 +85,13 @@ let adminPanelButtons = {
       .setLabel("Cancel")
       .setEmoji("❌")
       .setStyle("SECONDARY");
-  }
+  },
+
+  resetSyncState: new MessageButton()
+    .setCustomId(buttonIds.adminPanelIds.resetSyncState)
+    .setLabel("Reset sync state")
+    .setEmoji("🔃")
+    .setStyle("SUCCESS"),
 }
 
 export {

@@ -14,11 +14,21 @@ export default class PatronUpdater {
 
   private isUpdating: boolean = false;
   private prevImageData: string | undefined;
+  private lastSync: number;
 
   constructor(client: DiscordClient, database: Keyv, vrChat: VrChat) {
     this.client = client;
     this.database = database;
     this.vrChat = vrChat;
+  }
+
+  public resetSyncState(): void {
+    this.prevImageData = undefined;
+    this.lastSync = undefined;
+  }
+
+  public getLastSync(): number {
+    return this.lastSync;
   }
 
   public async updatePatrons(): Promise<Patron[]> {
@@ -104,6 +114,7 @@ export default class PatronUpdater {
     // Delete the image and cleanup!
     await unlink(exportPath);
     this.isUpdating = false;
+    this.lastSync = Date.now();
     console.log("Patrons on VRChat are now up-to-date again!");
   }
 

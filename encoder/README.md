@@ -21,6 +21,7 @@ This system is written in [TypeScript](https://www.typescriptlang.org/) and comp
 ## .env
 The whole config can be changed in the [.env](.env) file. Rename `.env.example` to `.env` to get started. These are the different options.
 ### Discord
+> Warning: Enable Server Members and Message Content Intent in the dev portal. The bot will throw the error `Privileged intent provided is not enabled or whitelisted.` if this is not enabled.
 - `DISCORD_TOKEN`: The discord bot token. Look at [this](https://discordapp.com/developers/applications/me) create a bot and get one.
 - `GUILD_ID`: Your Discord Server id. Look [here](https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-) if you want to know how to find it. 
 - `ROLE_ID`: The discord roles ids, separated by a space (`ID1 ID2 ID3`). Find the role ids by going to the role settings in the server, right click on the role and copy the id.

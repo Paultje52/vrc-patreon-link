@@ -10,6 +10,8 @@ import path = require("path");
 import { oldUserRegex, userRegex } from "./regex";
 import VrChat from "../vrchat/VrChat";
 import Keyv = require("keyv");
+import { linkStatuses } from "../patreon/Patron";
+import { LinkStatusses } from "../VrcPatreonLinkTypes";
 
 export default class AdminPanel {
 
@@ -22,6 +24,8 @@ export default class AdminPanel {
   private msg: Message;
   private channel: TextChannel;
   private logs: {time: number, log: string}[] = [];
+  private updateTimeout: NodeJS.Timeout;
+  private linkStatusCache: LinkStatusses;
 
   constructor(client: DiscordClient, patronUploader: PatronUpdater, patronInviter: PatronInviter, logger: Logger, vrChat: VrChat, database: Keyv) {
     this.client = client;
@@ -30,32 +34,54 @@ export default class AdminPanel {
     this.vrChat = vrChat;
     this.database = database;
 
-    let updateTimeout: NodeJS.Timeout;
-    logger.onLog((log: string) => {
-      if (log.includes("[DEBUG]")) return;
+    logger.onLog(this.onLog.bind(this));
+    this.registerEvents();
+  }
 
-      this.logs.push({
-        time: Date.now(),
-        log: log
-          .split(" [LOG]").join("")
-          .split("'").join("")
-          .split("\"").join("")
-      });
+  private async getLinkStatus(): Promise<LinkStatusses> {
 
-      if (updateTimeout) clearTimeout(updateTimeout);
-      updateTimeout = setTimeout(() => {
-        this.updateMessage();
-      }, 500);
+    if (this.linkStatusCache && this.linkStatusCache.date > Date.now() - 1000 * 60 * 60) return this.linkStatusCache;
+
+    let patrons = await this.client.fetchPatrons();
+    let notLinkedYet = [];
+
+    for (let patron of patrons) {
+      let link = await patron.getLinkStatus(this.database);
+      if (link !== linkStatuses.linked) notLinkedYet.push(patron);
+    }
+
+    this.linkStatusCache = {
+      date: Date.now(),
+      total: patrons.length,
+      notLinkedYet
+    }
+    return this.linkStatusCache;
+
+  }
+
+  private onLog(log: string): void {
+    if (log.includes("[DEBUG]")) return;
+
+    this.logs.push({
+      time: Date.now(),
+      log: log
+        .split(" [LOG]").join("")
+        .split("'").join("")
+        .split("\"").join("")
+        .split("\n").join("")
     });
 
-    this.registerEvents();
+    if (this.updateTimeout) clearTimeout(this.updateTimeout);
+    this.updateTimeout = setTimeout(() => {
+      this.updateMessage();
+    }, 500);
   }
   
   public async start() {
     let guild = this.client.guilds.cache.get(process.env.GUILD_ID);
     let channel = await guild.channels.fetch(process.env.ADMIN_PANEL_CHANNEL);
     if (!(channel instanceof TextChannel)) throw new Error("ADMIN_PANEL_CHANNEL is not a text channel!");
-    let msg = await channel.messages.fetch(process.env.ADMIN_PANEL_MESSAGE_ID).catch(() => null);
+    let msg = await channel.messages.fetch(process.env.ADMIN_PANEL_MESSAGE_ID || "123").catch(() => null);
 
     if (!msg) {
       msg = await channel.send({
@@ -70,18 +96,42 @@ export default class AdminPanel {
     this.updateMessage();
   }
 
+  private parseLogs(): string {
+    let formatedLogs = [...this.logs].map(({time, log}) => `<t:${Math.round(time/1000)}:R> \`\`${log}\`\``).reverse();
+    let parsed = [];
+    let parsedLength = 0;
+
+    for (let log of formatedLogs) {
+      if (parsedLength + log.length > 1750) break;
+      parsed.push(log);
+      parsedLength += log.length;
+    }
+
+    return parsed.reverse().join("\n");
+  }
+
   private async updateMessage() {
     if (!this.msg) {
       console.warn("Admin panel message is not set yet!");
       return;
     }
 
-    let parsedLogs = this.logs.map(({time, log}) => `<t:${Math.round(time/1000)}:R> \`\`${log}\`\``).join("");
-    parsedLogs = parsedLogs.substring(parsedLogs.length-1750);
+    let embedMsg = "";
+    // Last sync
+    let lastSync = this.patronUploader.getLastSync();
+    if (lastSync) embedMsg += `**Last sync:** <t:${Math.floor(lastSync/1000)}:R>\n`;
+    else embedMsg += `**Last sync:** _Not yet_\n`;
 
+    // Link status
+    let linkStatus = await this.getLinkStatus();
+    let amountAlreadyLinked = linkStatus.total-linkStatus.notLinkedYet.length;
+    embedMsg += `**Link status:** ${amountAlreadyLinked}/${linkStatus.total}`;
+    if (linkStatus.notLinkedYet.length <= 5 && linkStatus.notLinkedYet.length > 0) embedMsg += `\n> Not linked: ${linkStatus.notLinkedYet.map(p => `_<@${p.getMember().id}>_`).join(" - ")}\n`;
+
+    // Update msg
     return this.msg.edit({
-      content: parsedLogs,
-      embeds: [adminPanelEmbed()],
+      content: this.parseLogs(),
+      embeds: [adminPanelEmbed(embedMsg)],
       components: [new MessageActionRow().addComponents(
         adminPanelButtons.restart,
         adminPanelButtons.forceUpload,
@@ -89,6 +139,8 @@ export default class AdminPanel {
       ), new MessageActionRow().addComponents(
         adminPanelButtons.resetSpecifiedUser,
         adminPanelButtons.overrideSpecifiedUser
+      ), new MessageActionRow().addComponents(
+        adminPanelButtons.resetSyncState
       )]
     }).catch(() => null);
   }
@@ -127,7 +179,17 @@ export default class AdminPanel {
         interaction.deferUpdate();
         this.overrideSpecifiedUserButtonClick(buttonInteraction.user);
         break;
+
+      case buttonIds.adminPanelIds.resetSyncState:
+        interaction.deferUpdate();
+        this.resetSyncStateButtonClick(buttonInteraction.user);
+        break;
     }
+  }
+
+  private resetSyncStateButtonClick(user: User) {
+    console.log(`[Button action by ${user.username}] Sync state reset`);
+    this.patronUploader.resetSyncState();
   }
 
   private async restartButtonClick(user: User) {
