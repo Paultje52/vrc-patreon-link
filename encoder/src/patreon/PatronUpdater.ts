@@ -99,7 +99,10 @@ export default class PatronUpdater {
 
     // Upload the image to vrchat
     let result = await this.vrChat.upload(exportPath);
-    if (!result) console.warn("Couldn't upload the image to VRChat - automatically trying again in five minutes!");
+    if (!result) {
+      console.warn("Couldn't upload the image to VRChat - automatically trying again in five minutes!");
+      this.prevImageData = undefined; // Make sure we're uploading the image again!
+    }
 
     // Delete the image and cleanup!
     await unlink(exportPath);

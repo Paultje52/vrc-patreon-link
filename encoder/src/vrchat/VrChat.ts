@@ -14,7 +14,7 @@ export default class VrChat {
   public async upload(imagePath: string): Promise<boolean> {
     let res = await this.uploader.upload(imagePath)
       .catch((e) => {
-        console.error(e);
+        console.warn(e);
         return false;
       });
 
