@@ -39,6 +39,6 @@
     "dotenv": "15.0.0",
     "html-metadata-parser": "2.0.4",
     "keyv": "4.0.5",
-    "node-fetch": "2.6.6"
+    "node-fetch": "^2.6.7"
   }
 }
