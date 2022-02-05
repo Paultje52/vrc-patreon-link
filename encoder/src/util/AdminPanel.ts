@@ -10,7 +10,7 @@ import path = require("path");
 import { oldUserRegex, userRegex } from "./regex";
 import VrChat from "../vrchat/VrChat";
 import Keyv = require("keyv");
-import Patron, { linkStatuses } from "../patreon/Patron";
+import { linkStatuses } from "../patreon/Patron";
 import { LinkStatusses } from "../VrcPatreonLinkTypes";
 
 export default class AdminPanel {
@@ -116,14 +116,22 @@ export default class AdminPanel {
       return;
     }
 
+    let embedMsg = "";
+    // Last sync
+    let lastSync = this.patronUploader.getLastSync();
+    if (lastSync) embedMsg += `**Last sync:** <t:${Math.floor(lastSync/1000)}:R>\n`;
+    else embedMsg += `**Last sync:** _Not yet_\n`;
+
+    // Link status
     let linkStatus = await this.getLinkStatus();
     let amountAlreadyLinked = linkStatus.total-linkStatus.notLinkedYet.length;
-    let linkStatusMsg = `${amountAlreadyLinked}/${linkStatus.total}`;
-    if (linkStatus.notLinkedYet.length <= 5 && linkStatus.notLinkedYet.length > 0) linkStatusMsg += `\n> Not linked: ${linkStatus.notLinkedYet.map(p => `_<@${p.getMember().id}>_`).join(" - ")}\n`;
+    embedMsg += `**Link status:** ${amountAlreadyLinked}/${linkStatus.total}`;
+    if (linkStatus.notLinkedYet.length <= 5 && linkStatus.notLinkedYet.length > 0) embedMsg += `\n> Not linked: ${linkStatus.notLinkedYet.map(p => `_<@${p.getMember().id}>_`).join(" - ")}\n`;
 
+    // Update msg
     return this.msg.edit({
       content: this.parseLogs(),
-      embeds: [adminPanelEmbed(linkStatusMsg)],
+      embeds: [adminPanelEmbed(embedMsg)],
       components: [new MessageActionRow().addComponents(
         adminPanelButtons.restart,
         adminPanelButtons.forceUpload,
@@ -131,6 +139,8 @@ export default class AdminPanel {
       ), new MessageActionRow().addComponents(
         adminPanelButtons.resetSpecifiedUser,
         adminPanelButtons.overrideSpecifiedUser
+      ), new MessageActionRow().addComponents(
+        adminPanelButtons.resetSyncState
       )]
     }).catch(() => null);
   }
