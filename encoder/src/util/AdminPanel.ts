@@ -10,6 +10,8 @@ import path = require("path");
 import { oldUserRegex, userRegex } from "./regex";
 import VrChat from "../vrchat/VrChat";
 import Keyv = require("keyv");
+import Patron, { linkStatuses } from "../patreon/Patron";
+import { LinkStatusses } from "../VrcPatreonLinkTypes";
 
 export default class AdminPanel {
 
@@ -22,7 +24,8 @@ export default class AdminPanel {
   private msg: Message;
   private channel: TextChannel;
   private logs: {time: number, log: string}[] = [];
-  private updateTimeout: NodeJS.Timeout
+  private updateTimeout: NodeJS.Timeout;
+  private linkStatusCache: LinkStatusses;
 
   constructor(client: DiscordClient, patronUploader: PatronUpdater, patronInviter: PatronInviter, logger: Logger, vrChat: VrChat, database: Keyv) {
     this.client = client;
@@ -33,6 +36,27 @@ export default class AdminPanel {
 
     logger.onLog(this.onLog.bind(this));
     this.registerEvents();
+  }
+
+  private async getLinkStatus(): Promise<LinkStatusses> {
+
+    if (this.linkStatusCache && this.linkStatusCache.date > Date.now() - 1000 * 60 * 60) return this.linkStatusCache;
+
+    let patrons = await this.client.fetchPatrons();
+    let notLinkedYet = [];
+
+    for (let patron of patrons) {
+      let link = await patron.getLinkStatus(this.database);
+      if (link !== linkStatuses.linked) notLinkedYet.push(patron);
+    }
+
+    this.linkStatusCache = {
+      date: Date.now(),
+      total: patrons.length,
+      notLinkedYet
+    }
+    return this.linkStatusCache;
+
   }
 
   private onLog(log: string): void {
@@ -92,9 +116,14 @@ export default class AdminPanel {
       return;
     }
 
+    let linkStatus = await this.getLinkStatus();
+    let amountAlreadyLinked = linkStatus.total-linkStatus.notLinkedYet.length;
+    let linkStatusMsg = `${amountAlreadyLinked}/${linkStatus.total}`;
+    if (linkStatus.notLinkedYet.length <= 5 && linkStatus.notLinkedYet.length > 0) linkStatusMsg += `\n> Not linked: ${linkStatus.notLinkedYet.map(p => `_<@${p.getMember().id}>_`).join(" - ")}\n`;
+
     return this.msg.edit({
       content: this.parseLogs(),
-      embeds: [adminPanelEmbed()],
+      embeds: [adminPanelEmbed(linkStatusMsg)],
       components: [new MessageActionRow().addComponents(
         adminPanelButtons.restart,
         adminPanelButtons.forceUpload,

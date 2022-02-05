@@ -72,11 +72,11 @@ let removedLinkEmbed = new MessageEmbed()
   .setColor("#ED4245")
   .setDescription("Your VRChat profile URL has been removed! To add it again, click the button below.");
 
-let adminPanelEmbed = (msg?: string) => {
+let adminPanelEmbed = (linkStatus: string, msg?: string) => {
   return new MessageEmbed()
     .setTitle("Admin control")
     .setColor("#5865F2")
-    .setDescription(`${msg ? `\`\`\`${msg}\`\`\`` : ""}To control the bot, please click the button below.\n> _Everyone who can see this message can control the bot!_`);
+    .setDescription(`${msg ? `\`\`\`${msg}\`\`\`` : ""}**Link status:** ${linkStatus}\nTo control the bot, please click the button below.\n> _Everyone who can see this message can control the bot!_`);
 }
 let adminPanelLoadingEmbed = new MessageEmbed()
   .setTitle("Admin control")
