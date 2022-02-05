@@ -38,7 +38,7 @@
     "discord.js": "13.6.0",
     "dotenv": "15.0.0",
     "html-metadata-parser": "2.0.4",
-    "keyv": "4.0.5",
+    "keyv": "4.1.0",
     "node-fetch": "^2.6.7"
   }
 }
