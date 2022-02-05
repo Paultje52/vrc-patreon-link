@@ -22,6 +22,11 @@ export default class PatronUpdater {
     this.vrChat = vrChat;
   }
 
+  public resetSyncState(): void {
+    this.prevImageData = undefined;
+    this.lastSync = undefined;
+  }
+
   public getLastSync(): number {
     return this.lastSync;
   }

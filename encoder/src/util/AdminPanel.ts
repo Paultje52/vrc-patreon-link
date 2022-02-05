@@ -179,7 +179,17 @@ export default class AdminPanel {
         interaction.deferUpdate();
         this.overrideSpecifiedUserButtonClick(buttonInteraction.user);
         break;
+
+      case buttonIds.adminPanelIds.resetSyncState:
+        interaction.deferUpdate();
+        this.resetSyncStateButtonClick(buttonInteraction.user);
+        break;
     }
+  }
+
+  private resetSyncStateButtonClick(user: User) {
+    console.log(`[Button action by ${user.username}] Sync state reset`);
+    this.patronUploader.resetSyncState();
   }
 
   private async restartButtonClick(user: User) {
