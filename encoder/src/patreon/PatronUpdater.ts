@@ -81,7 +81,12 @@ export default class PatronUpdater {
   }
 
   public async syncWithVrChat(force?: boolean): Promise<void> {
-    if (this.isUpdating && !force) return console.warn("Already syncing - Why are you trying to sync so fast?");
+    if (this.isUpdating && !force) {
+      if (Date.now() - this.getLastSync() < 1000 * 60 * 15) return console.warn("Already syncing - Why are you trying to sync so fast?");
+      
+      console.warn("Already syncing - Auto force sync because sync takes too long!");
+      this.prevImageData = undefined;
+    }
     else if (this.isUpdating) console.warn("Already syncing - Forcing the bot to do it again. If error occurs, please restart the bot!");
     this.isUpdating = true;
     console.debug("Syncing patrons with VRChat...");
@@ -109,13 +114,16 @@ export default class PatronUpdater {
 
     // Upload the image to vrchat
     let result = await this.vrChat.upload(exportPath);
-    if (!result) console.warn("Couldn't upload the image to VRChat - automatically trying again in five minutes!");
+    if (!result) {
+      console.warn("Couldn't upload the image to VRChat - automatically trying again in five minutes!");
+      this.prevImageData = undefined; // Make sure we're uploading the image again!
+    }
 
     // Delete the image and cleanup!
     await unlink(exportPath);
     this.isUpdating = false;
     this.lastSync = Date.now();
-    console.log("Patrons on VRChat are now up-to-date again!");
+    if (result) console.log("Patrons on VRChat are now up-to-date again!");
   }
 
   private convertExportRoles(exportRoles: { [key: string]: string[] }): string {

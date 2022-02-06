@@ -1,13 +1,14 @@
-import fetch from "node-fetch";
+import fetch, { RequestInit, Response } from "node-fetch";
 import { readFile, writeFile, stat } from "fs/promises";
 import { createReadStream } from "fs";
 import * as path from "path";
 import * as crypto from "crypto";
 import { VrChatUploaderOptions } from "../VrcPatreonLinkTypes";
+import vrChatUrls from "./VrChatUrls";
 
 export default class VrChatUploader {
 
-  private baseUrl = "https://api.vrchat.cloud/api/1";
+  private baseUrl = vrChatUrls.base;
   private initialHeaders = {
     "accept": "*/*",
     "Content-Type": "application/json;charset=utf-8",
@@ -21,11 +22,17 @@ export default class VrChatUploader {
     this.options = options;
 
     this.getApiKey().then((apiKey) => {
+      if (!apiKey) console.warn("Cannot fetch API key! Please restart the bot to try again!");
       this.apiKey = apiKey;
     });
   }
 
   public async upload(imagePath: string): Promise<boolean> {
+
+    if (!this.apiKey) {
+      console.warn("Cannot upload image: API key is not set! Please restart the bot");
+      return false;
+    }
 
     console.debug(`Uploading ${imagePath} to VRChat!`);
 
@@ -40,6 +47,8 @@ export default class VrChatUploader {
       console.debug("Cookie is invalid, logging in again...");
       // Login
       let rawCookieData = await this.login(this.options.username, this.options.password);
+      if (!rawCookieData) return false;
+
       cookie = this.parseCookies(rawCookieData);
 
       // Save it for the next time
@@ -55,6 +64,7 @@ export default class VrChatUploader {
 
     // Get previous image
     let prevAvatar = await this.getAvatar(headers, this.options.avatarId);
+    if (!prevAvatar) return false;
     console.debug("Got previous avatar");
 
     // Pregenerate hash and fileId for the upload
@@ -71,7 +81,6 @@ export default class VrChatUploader {
         .catch((e) => {
           console.warn(`Create new file version error: ${e}`);
         });
-
       console.debug(`Fetched new file version: ${fetchedNewFileVersion}`);
 
       // The new version creation somehow failed - Let's delete and try again!
@@ -80,6 +89,7 @@ export default class VrChatUploader {
 
         let latestVersion = await this.getLatestFileVersion(headers, fileId)
           .catch((e) => {throw new Error(e)});
+        if (!latestVersion) return false;
 
         await this.deleteLatestVersion(headers, fileId, latestVersion)
           .catch((e) => {throw new Error(e)});
@@ -91,10 +101,14 @@ export default class VrChatUploader {
 
       let uploadUrl = await this.getUploadUrl(headers, fileId, fileVersion)
         .catch((e) => {throw new Error(e)});
+      if (!uploadUrl) return false;
+
       console.debug(`Uploading to ${uploadUrl}`);
 
-      await this.uploadImage(uploadUrl, imagePath, md5Hash, headers)
+      let uploadSuccess = await this.uploadImage(uploadUrl, imagePath, md5Hash, headers)
         .catch((e) => {throw new Error(e)});
+
+      if (!uploadSuccess) return false;
       console.debug("Image uploaded, cleaning up...");
 
     } catch (e) {
@@ -103,14 +117,19 @@ export default class VrChatUploader {
     }
       
     // Finish the upload
-    await this.finishUpload(headers, fileId, fileVersion);
-    await this.finishSignatureUpload(headers, fileId, fileVersion);
+    if (!
+      await this.finishUpload(headers, fileId, fileVersion)
+    ) return false;
+    if (!
+      await this.finishSignatureUpload(headers, fileId, fileVersion)
+    ) return false;
 
     // Check if it's failed
     if (failed) return false;
 
     // Update current image
     let newImageUrl = await this.updateCurrentImage(headers, this.options.avatarId, fileId, fileVersion);
+    if (!newImageUrl) return false;
 
     // Check if the upload was successful!
     return prevAvatar.imageUrl !== newImageUrl;
@@ -124,6 +143,19 @@ export default class VrChatUploader {
   private async readCookieFile(): Promise<string> {
     return await readFile(this.getCookiePath(), "utf8");
   }
+  
+  private async fetch(url: string, options?: RequestInit): Promise<Response | undefined> {
+    let fetchUrl = this.baseUrl + url;
+    let res = await fetch(fetchUrl, options);
+
+    if (!res.status.toString().startsWith("2")) {
+      let json = await res.json();
+      console.warn(`Failed to fetch ${url}: (${res.status} ${res.statusText})${json.error.message}`);
+      return undefined;
+    }
+
+    return res;
+  }
 
   private async isValidCookie(cookie: string): Promise<boolean> {
     let headers = {
@@ -131,11 +163,8 @@ export default class VrChatUploader {
       cookie
     };
 
-    let res = await fetch(this.baseUrl + "/auth", {
-      headers
-    });
-
-    if (res.status !== 200) return false;
+    let res = await this.fetch(vrChatUrls.checkAuth, { headers });
+    if (!res) return false;
 
     let json = await res.json();    
     return json.ok;
@@ -145,27 +174,26 @@ export default class VrChatUploader {
     await writeFile(this.getCookiePath(), cookie, { encoding: "utf8" });
   }
 
-  private async getApiKey(): Promise<string> {
-    let res = await fetch(this.baseUrl + "/config");
-    if (res.status !== 200) throw new Error("Cannot upload image: Failed to fetch config");
+  private async getApiKey(): Promise<string | undefined> {
+    let res = await this.fetch(vrChatUrls.config);
+    if (!res) return;
 
     let json: any = await res.json();
     return json.clientApiKey;
   }
 
-  private async login(username: string, password: string): Promise<string[]> {
+  private async login(username: string, password: string): Promise<string[] | undefined> {
 
     let auth = Buffer.from(`${encodeURIComponent(username)}:${encodeURIComponent(password)}`).toString("base64");
-    let res = await fetch(this.baseUrl + `/auth/user?apiKey=${this.apiKey}`, {
+    let res = await this.fetch(vrChatUrls.login(this.apiKey), {
       headers: {
         Authorization: `Basic ${auth}`,
         ...this.initialHeaders
       }
     });
 
-    if (res.status !== 200) throw new Error(`Cannot upload image: Failed to login: ${(await res.json()).error.message}`);
+    if (!res) return;
     return res.headers.raw()["set-cookie"];
-
   }
 
   private parseCookies(setCookiesHeader: string[]): string {
@@ -176,18 +204,14 @@ export default class VrChatUploader {
     }).join(";");
   }
 
-  private async getAvatar(headers: any, avatarId: String): Promise<any> {
-    let res = await fetch(this.baseUrl + `/avatars/${avatarId}`, {
+  private async getAvatar(headers: any, avatarId: string): Promise<any> {
+    let res = await this.fetch(vrChatUrls.avatar(avatarId), {
       headers
     });
+    if (!res) return;
 
     let json: any = await res.json();
-
-    if (res.status === 404) throw new Error("Cannot upload image: Avatar not found");
-    if (res.status !== 200) throw new Error("Cannot upload image: Failed to get avatar");
-
     return json;
-
   }
 
   private getFileMd5(imagePath: string): Promise<string> {
@@ -215,12 +239,12 @@ export default class VrChatUploader {
     return match[0];
   }
 
-  private async startFileUpload(headers: any, md5Hash: string, imagePath: string, fileId: string): Promise<string> {
+  private async startFileUpload(headers: any, md5Hash: string, imagePath: string, fileId: string): Promise<string | undefined> {
 
     let fileSize = await this.getFilesize(imagePath);
     let signatureSize = Math.floor(Math.random() * (10000 - 500 + 1)) + 500;
 
-    let res = await fetch(this.baseUrl + `/file/${fileId}`, {
+    let res = await this.fetch(vrChatUrls.file(fileId), {
       method: "POST",
       headers,
       body: JSON.stringify({
@@ -230,32 +254,27 @@ export default class VrChatUploader {
         signatureSizeInBytes: signatureSize
       })
     });
+    if (!res) return;
 
     let json = await res.json();
-    if (res.status !== 200) throw new Error(`Cannot upload image: Failed to start file upload: ${json.error.message}`);
-
     return json.versions[json.versions.length-1].version;
   }
 
-  private async getLatestFileVersion(headers: any, fileId: string): Promise<string> {
-    let res = await fetch(this.baseUrl + `/file/${fileId}`, {
+  private async getLatestFileVersion(headers: any, fileId: string): Promise<string | undefined> {
+    let res = await this.fetch(vrChatUrls.file(fileId), {
       headers
     });
+    if (!res) return;
 
     let json = await res.json();
-    if (res.status !== 200) throw new Error(`Cannot upload image: Failed to start file upload: ${json.error.message}`);
-
     return json.versions[json.versions.length-1].version;
   }
 
   private async deleteLatestVersion(headers: any, fileId: string, latestVersion: string): Promise<void> {
-    let res = await fetch(this.baseUrl + `/file/${fileId}/${latestVersion}`, {
+    await this.fetch(vrChatUrls.fileVersion(fileId, latestVersion), {
       headers,
       method: "DELETE"
     });
-
-    let json = await res.json();
-    if (res.status !== 200) throw new Error(`Cannot upload image: Failed to start file upload: ${json.error.message}`);
   }
 
   private async getFilesize(imagePath: string): Promise<number> {
@@ -263,19 +282,18 @@ export default class VrChatUploader {
     return stats.size;
   }
 
-  private async getUploadUrl(headers: any, fileId: string, fileVersion: string): Promise<string> {
-    let res = await fetch(this.baseUrl + `/file/${fileId}/${fileVersion}/file/start`, {
+  private async getUploadUrl(headers: any, fileId: string, fileVersion: string): Promise<string | undefined> {
+    let res = await this.fetch(vrChatUrls.startFileUpload(fileId, fileVersion), {
       method: "PUT",
       headers
     });
-
-    if (res.status !== 200) throw new Error(`Cannot upload image: Failed to get upload url: ${(await res.json()).error.message} (Version now ${fileVersion})`);
+    if (!res) return;
 
     let json = await res.json();
     return json.url;
   }
 
-  private async uploadImage(uploadUrl: string, imagePath: string, md5Hash: string, headers: any): Promise<void> {
+  private async uploadImage(uploadUrl: string, imagePath: string, md5Hash: string, headers: any): Promise<boolean> {
     let rawFile = await this.getFile(imagePath);
 
     let res = await fetch(uploadUrl, {
@@ -288,15 +306,15 @@ export default class VrChatUploader {
       }
     });
 
-    if (res.status !== 200) throw new Error("Cannot upload image: Failed while upload image");
+    return res ? res.status.toString().startsWith("2") : false;
   }
 
   private async getFile(imagePath: string): Promise<Buffer> {
     return await readFile(imagePath);
   }
 
-  private async finishUpload(headers: any, fileId: string, fileVersion: string): Promise<void> {
-    let res = await fetch(this.baseUrl + `/file/${fileId}/${fileVersion}/file/finish`, {
+  private async finishUpload(headers: any, fileId: string, fileVersion: string): Promise<boolean> {
+    let res = await this.fetch(vrChatUrls.finishFileUpload(fileId, fileVersion), {
       method: "PUT",
       headers,
       body: JSON.stringify({
@@ -305,11 +323,11 @@ export default class VrChatUploader {
       })
     });
 
-    if (res.status !== 200) throw new Error(`Cannot upload image: Failed to finish upload: ${(await res.json()).error.message}`);
+    return res ? res.status.toString().startsWith("2") : false;
   }
-  
-  private async finishSignatureUpload(headers: any, fileId: string, fileVersion: string): Promise<void> {
-    let res = await fetch(this.baseUrl + `/file/${fileId}/${fileVersion}/signature/finish`, {
+
+  private async finishSignatureUpload(headers: any, fileId: string, fileVersion: string): Promise<boolean> {
+    let res = await this.fetch(vrChatUrls.finishSignatureUpload(fileId, fileVersion), {
       method: "PUT",
       headers,
       body: JSON.stringify({
@@ -318,22 +336,21 @@ export default class VrChatUploader {
       })
     });
 
-    if (res.status !== 200) throw new Error("Cannot upload image: Failed to finish signature upload");
+    return res ? res.status.toString().startsWith("2") : false;
   } 
 
-  private async updateCurrentImage(headers: any, avatarId: string, fileId: string, fileVersion: string): Promise<string> {
-    let res = await fetch(this.baseUrl + `/avatars/${avatarId}`, {
+  private async updateCurrentImage(headers: any, avatarId: string, fileId: string, fileVersion: string): Promise<string | undefined> {
+    let res = await this.fetch(vrChatUrls.avatar(avatarId), {
       method: "PUT",
       headers,
       body: JSON.stringify({
         id: avatarId,
-        imageUrl: `${this.baseUrl}/file/${fileId}/${fileVersion}/file`
+        imageUrl: vrChatUrls.base + vrChatUrls.fileVersionFile(fileId, fileVersion)
       })
     });
 
-    if (res.status !== 200) throw new Error("Cannot upload image: Failed to update current image");
-
-    return (<any> res.json()).imageUrl;
+    if (!res) return;
+    return (<any> await res.json()).imageUrl;
   }
 
 }
