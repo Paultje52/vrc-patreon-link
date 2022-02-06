@@ -117,6 +117,8 @@ export default class AdminPanel {
     }
 
     let embedMsg = "";
+    // Online since
+    embedMsg += `**Online since:** <t:${Math.floor(Date.now()/1000-process.uptime())}:R>\n`;
     // Last sync
     let lastSync = this.patronUploader.getLastSync();
     if (lastSync) embedMsg += `**Last sync:** <t:${Math.floor(lastSync/1000)}:R>\n`;
