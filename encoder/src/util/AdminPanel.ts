@@ -128,7 +128,7 @@ export default class AdminPanel {
     let linkStatus = await this.getLinkStatus();
     let amountAlreadyLinked = linkStatus.total-linkStatus.notLinkedYet.length;
     embedMsg += `**Link status:** ${amountAlreadyLinked}/${linkStatus.total}`;
-    if (linkStatus.notLinkedYet.length <= 5 && linkStatus.notLinkedYet.length > 0) embedMsg += `\n> Not linked: ${linkStatus.notLinkedYet.map(p => `_<@${p.getMember().id}>_`).join(" - ")}\n`;
+    if (linkStatus.notLinkedYet.length <= 15 && linkStatus.notLinkedYet.length > 0) embedMsg += `\n> Not linked: ${linkStatus.notLinkedYet.map(p => `_<@${p.getMember().id}>_`).join(" - ")}\n`;
 
     // Update msg
     return this.msg.edit({
