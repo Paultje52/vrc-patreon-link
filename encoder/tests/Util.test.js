@@ -20,6 +20,7 @@ describe("Button tests", () => {
     expect(ids.adminPanelIds.exportListId).toBe("export-list");
     expect(ids.adminPanelIds.resetSpecifiedUserId).toBe("reset-specified-user");
     expect(ids.adminPanelIds.overrideSpecifiedUserId).toBe("override-specified-user");
+    expect(ids.adminPanelIds.resetSyncState).toBe("reset-sync-state");
   });
 
   test("addLink", () => {

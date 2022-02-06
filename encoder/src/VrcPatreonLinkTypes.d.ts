@@ -1,3 +1,5 @@
+import type Patron from "./patreon/Patron"
+
 export type ClientOptions = {
   token: string;
   guild: string;
@@ -20,4 +22,10 @@ export type userDataCache = {
 export type LoggerOptions = {
   enabled: boolean;
   timezone: string;
+}
+
+export type LinkStatusses = {
+  date: number,
+  total: number,
+  notLinkedYet: Patron[]
 }
