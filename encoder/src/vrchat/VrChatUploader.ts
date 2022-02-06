@@ -81,8 +81,6 @@ export default class VrChatUploader {
         .catch((e) => {
           console.warn(`Create new file version error: ${e}`);
         });
-      if (!fetchedNewFileVersion) return false;
-
       console.debug(`Fetched new file version: ${fetchedNewFileVersion}`);
 
       // The new version creation somehow failed - Let's delete and try again!
@@ -308,7 +306,7 @@ export default class VrChatUploader {
       }
     });
 
-    return !!res;
+    return res ? res.status.toString().startsWith("2") : false;
   }
 
   private async getFile(imagePath: string): Promise<Buffer> {
@@ -325,7 +323,7 @@ export default class VrChatUploader {
       })
     });
 
-    return !!res;
+    return res ? res.status.toString().startsWith("2") : false;
   }
 
   private async finishSignatureUpload(headers: any, fileId: string, fileVersion: string): Promise<boolean> {
@@ -338,7 +336,7 @@ export default class VrChatUploader {
       })
     });
 
-    return !!res;
+    return res ? res.status.toString().startsWith("2") : false;
   } 
 
   private async updateCurrentImage(headers: any, avatarId: string, fileId: string, fileVersion: string): Promise<string | undefined> {
@@ -347,12 +345,12 @@ export default class VrChatUploader {
       headers,
       body: JSON.stringify({
         id: avatarId,
-        imageUrl: `${this.baseUrl}/file/${fileId}/${fileVersion}/file`
+        imageUrl: vrChatUrls.base + vrChatUrls.fileVersionFile(fileId, fileVersion)
       })
     });
 
     if (!res) return;
-    return (<any> res.json()).imageUrl;
+    return (<any> await res.json()).imageUrl;
   }
 
 }
