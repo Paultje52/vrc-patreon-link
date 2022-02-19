@@ -7,9 +7,13 @@ export default class VrChat {
 
   private uploader: VrChatUploader;
   private userdataCache: Map<String, userDataCache> = new Map<String, userDataCache>();
+  private headers: any;
 
   constructor(uploaderOptions: VrChatUploaderOptions) {
     this.uploader = new VrChatUploader(uploaderOptions);
+    this.uploader.getParsedLoginHeaders().then((headers) => {
+      this.headers = headers;
+    });
   }
 
   public async upload(imagePath: string): Promise<boolean> {
@@ -30,9 +34,8 @@ export default class VrChat {
     }
     
     let apiKey = this.uploader.getSavedApiKey();
-    let headers = await this.uploader.getParsedLoginHeaders();
     let res = await fetch(`https://api.vrchat.cloud/api/1/users/${vrChatUserId}?apiKey=${apiKey}`, {
-      headers
+      headers: this.headers
     });
 
     let json = await res.json();
