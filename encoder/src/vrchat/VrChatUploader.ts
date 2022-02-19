@@ -27,16 +27,11 @@ export default class VrChatUploader {
     });
   }
 
-  public async upload(imagePath: string): Promise<boolean> {
+  public getSavedApiKey(): string {
+    return this.apiKey;
+  }
 
-    if (!this.apiKey) {
-      console.warn("Cannot upload image: API key is not set! Please restart the bot");
-      return false;
-    }
-
-    console.debug(`Uploading ${imagePath} to VRChat!`);
-
-    // Get saved cookie
+  public async getParsedLoginHeaders(): Promise<any> {
     let cookie: string;
     try {
       cookie = await this.readCookieFile();
@@ -57,10 +52,23 @@ export default class VrChatUploader {
     } else console.debug("Cookie is valid, using it...");
 
     // Request headers
-    let headers = {
+    return {
       ...this.initialHeaders,
       cookie
     };
+  }
+
+  public async upload(imagePath: string): Promise<boolean> {
+
+    if (!this.apiKey) {
+      console.warn("Cannot upload image: API key is not set! Please restart the bot");
+      return false;
+    }
+
+    console.debug(`Uploading ${imagePath} to VRChat!`);
+
+    // Get saved cookie
+    let headers = await this.getParsedLoginHeaders();
 
     // Get previous image
     let prevAvatar = await this.getAvatar(headers, this.options.avatarId);

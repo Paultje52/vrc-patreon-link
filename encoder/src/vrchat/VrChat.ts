@@ -1,6 +1,7 @@
 import VrChatUploader from "./VrChatUploader";
 import { userDataCache, VrChatUploaderOptions } from "../VrcPatreonLinkTypes";
 import { parser } from "html-metadata-parser";
+import fetch from "node-fetch";
 
 export default class VrChat {
 
@@ -28,13 +29,15 @@ export default class VrChat {
       if (Date.now()-(1000*60*60) < cachedUserdata.cacheTime) return cachedUserdata;
     }
     
-    let data = await parser(`https://vrchat.com/home/user/${vrChatUserId}`);
+    let apiKey = this.uploader.getSavedApiKey();
+    let headers = await this.uploader.getParsedLoginHeaders();
+    let res = await fetch(`https://api.vrchat.cloud/api/1/users/${vrChatUserId}?apiKey=${apiKey}`, {
+      headers
+    });
 
-    let username: string;
-    if (data && data.og && data.og.title) username = data.og.title;
-
-    let avatarLink: string;
-    if (data && data.og && data.og.image) avatarLink = data.og.image;
+    let json = await res.json();
+    let username = json.displayName;
+    let avatarLink = json.currentAvatarImageUrl;
 
     this.userdataCache.set(vrChatUserId, {
       cacheTime: Date.now(),
@@ -42,7 +45,11 @@ export default class VrChat {
       avatarLink
     });
 
-    return this.userdataCache.get(vrChatUserId);
+    return {
+      cacheTime: Date.now(),
+      username,
+      avatarLink
+    };
     
   }
   
