@@ -6,7 +6,6 @@ jobs:
   test:
     name: Test the build
     runs-on: ubuntu-latest
-    needs: [build]
 
     strategy:
       matrix:
