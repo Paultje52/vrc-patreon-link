@@ -6,7 +6,8 @@
     "rootDir": "./src",
     "resolveJsonModule": true,
     "downlevelIteration": true,
-    "module": "CommonJS"
+    "module": "CommonJS",
+    "esModuleInterop": true
   },
   "exclude": ["node_modules"],
   "include": ["src/**/*.json", "src/**/*"],

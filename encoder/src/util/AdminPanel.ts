@@ -6,10 +6,10 @@ import { adminPanelButtons, buttonIds, removeLink } from "./buttons";
 import Logger from "./Logger";
 import { adminConfirmForceUploadEmbed, adminConfirmOverrideEmbed, adminConfirmResetEmbed, adminGetUserCancelledEmbed, adminGetUserInvalidUserEmbed, adminOverrideToPatronEmbed, adminPanelEmbed, adminPanelLoadingEmbed, adminResetToPatronEmbed, adminSendGetUserEmbed, adminSendOverrideUserEmbed, invalidLinkEmbed, invalidUseridEmbed } from "./messages";
 import * as fs from "fs/promises";
-import path = require("path");
+import path from "path";
 import { oldUserRegex, userRegex } from "./regex";
 import VrChat from "../vrchat/VrChat";
-import Keyv = require("keyv");
+import Keyv from "keyv";
 import { linkStatuses } from "../patreon/Patron";
 import { LinkStatusses } from "../VrcPatreonLinkTypes";
 

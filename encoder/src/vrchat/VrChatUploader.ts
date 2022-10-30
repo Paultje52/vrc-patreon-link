@@ -16,10 +16,12 @@ export default class VrChatUploader {
   };
 
   private options: VrChatUploaderOptions;
+  private avatarId: string;
   private apiKey: string;
 
-  constructor(options: VrChatUploaderOptions) {
+  constructor(options: VrChatUploaderOptions, avatarId: string) {
     this.options = options;
+    this.avatarId = avatarId;
 
     this.getApiKey().then((apiKey) => {
       if (!apiKey) console.warn("Cannot fetch API key! Please restart the bot to try again!");
@@ -29,6 +31,9 @@ export default class VrChatUploader {
 
   public getSavedApiKey(): string {
     return this.apiKey;
+  }
+  public getAvatarId(): string {
+    return this.avatarId;
   }
 
   public async getParsedLoginHeaders(): Promise<any> {
@@ -71,7 +76,7 @@ export default class VrChatUploader {
     let headers = await this.getParsedLoginHeaders();
 
     // Get previous image
-    let prevAvatar = await this.getAvatar(headers, this.options.avatarId);
+    let prevAvatar = await this.getAvatar(headers, this.avatarId);
     if (!prevAvatar) return false;
     console.debug("Got previous avatar");
 
@@ -136,7 +141,7 @@ export default class VrChatUploader {
     if (failed) return false;
 
     // Update current image
-    let newImageUrl = await this.updateCurrentImage(headers, this.options.avatarId, fileId, fileVersion);
+    let newImageUrl = await this.updateCurrentImage(headers, this.avatarId, fileId, fileVersion);
     if (!newImageUrl) return false;
 
     // Check if the upload was successful!

@@ -4,16 +4,23 @@ import fetch from "node-fetch";
 
 export default class VrChat {
 
-  private uploader: VrChatUploader;
+  private uploaders: VrChatUploader[] = [];
   private userdataCache: Map<String, userDataCache> = new Map<String, userDataCache>();
   private headers: any;
   private userFetchErrors = 0;
   private userFetchSuccess = 0;
 
-  constructor(uploaderOptions: VrChatUploaderOptions) {
-    this.uploader = new VrChatUploader(uploaderOptions);
-    this.uploader.getParsedLoginHeaders().then((headers) => {
+  constructor(avatars: string[], uploaderOptions: VrChatUploaderOptions) {
+    const uploader = new VrChatUploader(uploaderOptions, avatars.shift());
+    uploader.getParsedLoginHeaders().then((headers) => {
       this.headers = headers;
+      this.uploaders.push(uploader);
+
+      // Create the other avatar uploaders
+      for (let avatar of avatars) {
+        let uploader = new VrChatUploader(uploaderOptions, avatar);
+        this.uploaders.push(uploader);
+      }
     });
   }
 
@@ -24,14 +31,22 @@ export default class VrChat {
     return `${this.userFetchErrors}/${total} - ${Math.round(this.userFetchErrors/total*10000)/100}%`;
   }
 
-  public async upload(imagePath: string): Promise<boolean> {
-    let res = await this.uploader.upload(imagePath)
-      .catch((e) => {
-        console.warn(e);
-        return false;
-      });
+  public getAvatarIds(): string[] {
+    return this.uploaders.map((uploader) => uploader.getAvatarId());
+  }
 
-    return res;
+  public async upload(...imagePaths: string[]): Promise<boolean> {
+    const res = await Promise.all(
+      imagePaths.map(async (imagePath, i) => {
+        return this.uploaders[i].upload(imagePath)
+          .catch((e) => {
+            console.warn(e);
+            return false;
+          });
+      })
+    );
+
+    return res.every((e) => e);
   }
 
   private async _getUserdata(vrChatUserId: string): Promise<null | userDataCache> {
@@ -41,7 +56,7 @@ export default class VrChat {
       if (Date.now()-(1000*60*60) < cachedUserdata.cacheTime) return cachedUserdata;
     }
     
-    let apiKey = this.uploader.getSavedApiKey();
+    let apiKey = this.uploaders[0].getSavedApiKey();
     let res = await fetch(`https://api.vrchat.cloud/api/1/users/${vrChatUserId}?apiKey=${apiKey}`, {
       headers: this.headers
     });

@@ -1,6 +1,6 @@
 import { unlink, writeFile } from "fs/promises";
 import * as Keyv from "keyv";
-import path = require("path");
+import path from "path";
 import DiscordClient from "../discord/DiscordClient";
 import imageEncoder from "../imageEncoder/imageEncoder";
 import Patron, { linkStatuses } from "./Patron";
@@ -113,19 +113,27 @@ export default class PatronUpdater {
     console.info(`==[EXPORT]==\n${exportRolesString}\n==[EXPORT]==`);
 
     // Let's use our beautiful code to export the data to an image. Want to know more? Look at GitHub!
-    let exportPath = path.join(__dirname, "patrons-export.tmp.png");
-    let imgData = imageEncoder(exportRolesString);
-    await writeFile(exportPath, imgData);
+    const imgDataBuffers = imageEncoder(exportRolesString, this.vrChat.getAvatarIds());
+    const exportPaths = [];
+    for (let i = 0; i < imgDataBuffers.length; i++) {
+      const imageData = imgDataBuffers[i];
+      const exportPath = path.join(__dirname, `patrons-export-${i}.tmp.png`);
+
+      await writeFile(exportPath, imageData);
+      exportPaths.push(exportPath);
+    }
 
     // Upload the image to vrchat
-    let result = await this.vrChat.upload(exportPath);
+    let result = await this.vrChat.upload(...exportPaths);
     if (!result) {
       console.warn("Couldn't upload the image to VRChat - automatically trying again in five minutes!");
       this.prevImageData = undefined; // Make sure we're uploading the image again!
     }
 
     // Delete the image and cleanup!
-    await unlink(exportPath);
+    for (const exportPath of exportPaths) {
+      await unlink(exportPath);
+    }
     this.isUpdating = false;
     this.lastSync = Date.now();
     if (result) console.log("Patrons on VRChat are now up-to-date again!");

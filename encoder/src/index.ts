@@ -1,5 +1,5 @@
 import DiscordClient from "./discord/DiscordClient";
-import * as Keyv from "keyv";
+import Keyv from "keyv";
 import PatronInviter from "./patreon/PatronInviter";
 import PatronUpdater from "./patreon/PatronUpdater";
 import VrChat from "./vrchat/VrChat";
@@ -29,10 +29,9 @@ let client = new DiscordClient({
   roles: <string> process.env.ROLE_ID,
   channel: <string> process.env.PATREON_CHANNEL
 });
-let vrChat = new VrChat({
+let vrChat = new VrChat(process.env.VR_CHAT_AVATARID.split("."), {
   username: <string> process.env.VR_CHAT_USERNAME,
-  password: <string> process.env.VR_CHAT_PASSWORD,
-  avatarId: <string> process.env.VR_CHAT_AVATARID
+  password: <string> process.env.VR_CHAT_PASSWORD
 });
 let patronUpdater = new PatronUpdater(client, database, vrChat); // The patron updater is responsible for updating the patrons
 let patronInviter = new PatronInviter(client, database, vrChat); // If a new patron is found, the patron inviter is responsible for inviting them, including handling message buttons 
@@ -63,5 +62,4 @@ client.on("guildMemberUpdate", async () => {
 
 setInterval(() => {
   patronUpdater.syncWithVrChat();
-
 }, 1000*60*5); // Five minute interval

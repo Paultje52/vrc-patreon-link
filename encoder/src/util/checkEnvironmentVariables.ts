@@ -1,5 +1,6 @@
 export default function checkEnvironmentVariables() {
   require("dotenv").config();
+
   // Discord stuff
   if (!process.env.DISCORD_TOKEN) throw new Error("DISCORD_TOKEN in .env file is not set!");
   if (!process.env.GUILD_ID) throw new Error("GUILD_ID in .env file is not set!");

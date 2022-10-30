@@ -10,7 +10,6 @@ export type ClientOptions = {
 export type VrChatUploaderOptions = {
   username: string;
   password: string;
-  avatarId: string;
 }
 
 export type userDataCache = {
