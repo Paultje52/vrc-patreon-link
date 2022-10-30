@@ -1,4 +1,4 @@
-import { acceptProfileEmbed, addVrChatLinkEmbed, confirmUser, denyProfileTryAgainEmbed, dmsClosedEmbed, invalidLinkEmbed, invalidUseridEmbed, removedLinkEmbed, stillDmsClosedEmbed, welcomeMessageEmbed } from "../util/messages";
+import { acceptProfileEmbed, addVrChatLinkEmbed, confirmUser, denyProfileTryAgainEmbed, dmsClosedEmbed, invalidLinkEmbed, invalidUseridEmbed, removedLinkEmbed, stillDmsClosedEmbed, vrChatErrorEmbed, welcomeMessageEmbed } from "../util/messages";
 import { addLink, addLinkServer, addProfileNo, addProfileYes, buttonIds, removeLink } from "../util/buttons";
 import { ButtonInteraction, Interaction, Message, MessageActionRow } from "discord.js";
 import Patron, { linkStatuses } from "./Patron";
@@ -231,6 +231,17 @@ export default class PatronInviter {
 
     let username = await this.vrChat.getUsernameFromId(userId);
     let avatar = await this.vrChat.getAvatarFromId(userId);
+
+    if (!username || !avatar) {
+      patron.sendMessage({
+        embeds: [ vrChatErrorEmbed ],
+        components: [
+          new MessageActionRow().addComponents(addLink)
+        ]
+      });
+      patron.setLinkStatus(linkStatuses.invited, this.database);
+      return;
+    }
 
     patron.setLinkStatus(linkStatuses.waitingOnConfirmation, this.database);
     patron.setConfirmationProfileId(userId, this.database);

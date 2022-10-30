@@ -56,7 +56,12 @@ export default class PatronUpdater {
       if (typeof vrChatId !== "string") continue; // Didn't link to vrchat (yet)
 
       // Get the vrchat user
-      let username = await this.vrChat.getUsernameFromId(vrChatId);
+      let username: string;
+      while (!username) {
+        username = await this.vrChat.getUsernameFromId(vrChatId);
+
+        if (!username) await new Promise((res) => setTimeout(res, 1000));
+      }
 
       // Go through all roles and add the member where appropriate
       for (let role of Array.from(member.roles.cache.values())) {

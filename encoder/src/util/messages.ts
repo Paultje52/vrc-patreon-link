@@ -67,6 +67,11 @@ let confirmUser = (username: string, profilePicture: string, userId: string) => 
     });
 }
 
+let vrChatErrorEmbed = new MessageEmbed()
+  .setTitle("VRChat API error")
+  .setColor("#ED4245")
+  .setDescription("The VRChat API is currently unavailable. Please try again later.\nTo try again, click the button below.");
+
 let removedLinkEmbed = new MessageEmbed()
   .setTitle("Profile link removed")
   .setColor("#ED4245")
@@ -153,6 +158,7 @@ export {
   invalidLinkEmbed,
   invalidUseridEmbed,
   confirmUser,
+  vrChatErrorEmbed,
 
   adminPanelEmbed,
   adminPanelLoadingEmbed,
