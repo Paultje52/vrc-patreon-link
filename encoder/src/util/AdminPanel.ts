@@ -130,6 +130,9 @@ export default class AdminPanel {
     embedMsg += `**Link status:** ${amountAlreadyLinked}/${linkStatus.total}`;
     if (linkStatus.notLinkedYet.length <= 15 && linkStatus.notLinkedYet.length > 0) embedMsg += `\n> Not linked: ${linkStatus.notLinkedYet.map(p => `\`${p.getMember().user.tag}\``).join(" - ")}\n`;
 
+    // User fetch error rate
+    embedMsg += `\n**User fetch error rate:** ${this.vrChat.getErrorRate()}\n`;
+
     // Update msg
     return this.msg.edit({
       content: this.parseLogs(),
