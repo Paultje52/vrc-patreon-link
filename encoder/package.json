@@ -33,11 +33,11 @@
   },
   "homepage": "https://github.com/Paultje52/vrc-patreon-link#readme",
   "dependencies": {
-    "@keyv/sqlite": "3.5.0",
-    "canvas": "2.9.1",
+    "@keyv/sqlite": "3.6.2",
+    "canvas": "2.10.2",
     "discord.js": "13.6.0",
-    "dotenv": "16.0.0",
-    "keyv": "4.2.2",
+    "dotenv": "16.0.3",
+    "keyv": "4.5.0",
     "node-fetch": "2.6.7"
   }
 }
