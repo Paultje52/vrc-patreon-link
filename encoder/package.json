@@ -4,7 +4,7 @@
     "@types/keyv": "3.1.4",
     "@types/node": "17.0.31",
     "jest": "27.5.1",
-    "jest-image-snapshot": "4.5.1",
+    "jest-image-snapshot": "6.0.0",
     "typescript": "4.6.4"
   },
   "name": "vrc-patreon-link",
