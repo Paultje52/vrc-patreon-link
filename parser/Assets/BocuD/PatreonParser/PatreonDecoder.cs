@@ -100,7 +100,7 @@ public class PatreonDecoderEditor : Editor
 [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
 public class PatreonDecoder : UdonSharpBehaviour
 {
-    public AvatarImagePrefab avatarImageReader;
+    public RuntimeDecoder avatarImageReader;
 
     public string[] roleNames;
     public TextMeshPro[] outputTMPs;
