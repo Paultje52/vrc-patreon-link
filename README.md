@@ -1,3 +1,5 @@
+> _Currently there are some login issues because VRChat changed their API. We're working on a rewrite. In this rewrite, we're also going to use the new [String Loading](https://docs.vrchat.com/docs/string-loading) api._
+
 # VRC-Patreon-Link
 > Automatically uploads a list of patrons to VRChat everytime a patron joins or leaves, without reuploading the world. For use with https://github.com/Miner28/AvatarImageReader
 
