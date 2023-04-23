@@ -4,4 +4,4 @@ const oldUserRegex = /(?:vrchat.com\/home\/user\/)[0-9a-zA-Z]{10}/gm;
 export {
   userRegex,
   oldUserRegex
-}
+};

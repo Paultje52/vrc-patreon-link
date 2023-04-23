@@ -1,65 +1,94 @@
-import DiscordClient from "./discord/DiscordClient";
-import Keyv from "keyv";
-import PatronInviter from "./patreon/PatronInviter";
-import PatronUpdater from "./patreon/PatronUpdater";
-import VrChat from "./vrchat/VrChat";
-import checkEnvironmentVariables from "./util/checkEnvironmentVariables";
-import Logger from "./util/Logger";
-import AdminPanel from "./util/AdminPanel";
+// "Starting" log
+console.log("Starting...");
 
-// Startup log
-console.log("Starting VRC-Patreon-Link...");
+import AdminPanel from "./AdminPanel";
+// Importing dependencies
+import DiscordClient from "./client/DiscordClient";
+import GithubClient from "./client/GithubClient";
+import VRChatClient from "./client/VRChatClient";
 
-// Check process environment variables
-checkEnvironmentVariables();
+// Environment variables
+import "./util/checkenv";
+import ensureInvites from "./util/ensureInvites";
 
-// Creating the logger
-let logger = new Logger({
-  enabled: process.env.LOGGER_ENABLED === "true",
-  timezone: <string> process.env.LOGGER_TIMEZONE
-});
+// Creating the clients
+const client = new DiscordClient();
+const vrChatClient = new VRChatClient();
+const githubClient = new GithubClient();
 
-// Create database
-let database = new Keyv("sqlite://patreons.sqlite");
+// Discord client configuration
+client.setVRChatClient(vrChatClient);
+client.setGithubClient(githubClient);
+client.login(process.env.DISCORD_TOKEN);
 
-// Construct classes
-let client = new DiscordClient({
-  token: <string> process.env.DISCORD_TOKEN,
-  guild: <string> process.env.GUILD_ID,
-  roles: <string> process.env.ROLE_ID,
-  channel: <string> process.env.PATREON_CHANNEL
-});
-let vrChat = new VrChat(process.env.VR_CHAT_AVATARID.split("."), {
-  username: <string> process.env.VR_CHAT_USERNAME,
-  password: <string> process.env.VR_CHAT_PASSWORD
-});
-let patronUpdater = new PatronUpdater(client, database, vrChat); // The patron updater is responsible for updating the patrons
-let patronInviter = new PatronInviter(client, database, vrChat); // If a new patron is found, the patron inviter is responsible for inviting them, including handling message buttons 
-let adminPanel = new AdminPanel(client, patronUpdater, patronInviter, logger, vrChat, database); // The admin panel is responsible for handling the admin commands
+// Create admin panel
+const adminPanel = new AdminPanel(client, vrChatClient);
 
-// Log when the client is ready!
+// When the client is ready
 client.on("ready", async () => {
-  console.log(`Hello, I'm logged in as ${client.user.tag}!`);
+  // Fetch all users with a role
+  const users = await client.fetchUsers();
+  client.setAllUsers(users);
 
-  adminPanel.start();
+  // Bot status update
+  client.updatePresence();
+  setInterval(() => {
+    client.updatePresence();
+  }, 1000 * 60 * 5);
 
-  let patronsToInvite = await patronUpdater.updatePatrons();
-  if (patronsToInvite.length > 0) {
-    console.log(`Sending invites to ${patronsToInvite.length} patron(s)...`);
-    patronInviter.inviteNewPatrons(patronsToInvite);
-  }
-  
-  patronUpdater.syncWithVrChat();
+  // Admin panel
+  await adminPanel.initialize();
+
+  // We're ready!
+  console.log("VRC Patreon Link is ready!");
+  ensureInvites(client);
+
+  // Update patreons every 5 minutes - 5 seconds after startup
+  setTimeout(() => {
+    client.updatePatreons();
+  }, 5000);
+  setInterval(() => {
+    client.updatePatreons();
+  }, 1000 * 60 * 5);
 });
 
 client.on("guildMemberUpdate", async () => {
-  let patronsToInvite = await patronUpdater.updatePatrons();
-  if (patronsToInvite.length === 0) return;
-
-  console.log(`Sending invites to ${patronsToInvite.length} patron(s)...`);
-  patronInviter.inviteNewPatrons(patronsToInvite);
+  const users = await client.fetchUsers();
+  client.setAllUsers(users);
+  ensureInvites(client);
 });
 
-setInterval(() => {
-  patronUpdater.syncWithVrChat();
-}, 1000*60*5); // Five minute interval
+client.on("interactionCreate", (interaction) => {
+  // If the user clicks on a button in the DMs
+  if (interaction.isButton() && interaction.customId.startsWith("USER_")) {
+    const user = client.getAllUsers().get(interaction.user.id);
+    if (user) user.buttonInteraction(interaction);
+  }
+
+  // If the user clicks on a button in the AdminPanel
+  if (interaction.isButton() && interaction.customId.startsWith("ADMIN_")) {
+    adminPanel.buttonInteraction(interaction);
+  }
+  // If an AdminPanel modal is submitted
+  if (interaction.isModalSubmit() && interaction.customId.startsWith("ADMIN_")) {
+    adminPanel.modalInteraction(interaction);
+  }
+
+  // If a user clicks on the reset link state in a DMs closed message
+  if (interaction.isButton() && interaction.customId.startsWith("DM_CLOSED_")) {
+    const user = client.getAllUsers().get(interaction.customId.split("DM_CLOSED_")[1]);
+    if (!user || user.getDiscordMember().id !== interaction.member?.user.id) return;
+
+    interaction.deferUpdate();
+    console.log(`Inviting ${user.getDiscordMember().displayName} (${user.getDiscordMember().id})...`);
+    user.invite();
+  }
+});
+
+client.on("messageCreate", (message) => {
+  // If the user sends a message in the DMs to the bot
+  if (message.channel.isDMBased()) {
+    const user = client.getAllUsers().get(message.author.id);
+    if (user) user.messageInteraction(message);
+  }
+});

@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @unique
+  linkState LINK_STATE @default(NOT_INVITED)
+  vrChatId  String?
+}
+
+enum LINK_STATE {
+  NOT_INVITED
+  INVITED
+  PROVIDE_NAME_OR_ID
+  CONFIRM_SELECT
+  LINKED
+}

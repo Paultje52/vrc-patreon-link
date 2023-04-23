@@ -1,14 +1,15 @@
 {
   "compilerOptions": {
-    "target": "ES6",
+    "target": "ES2022",
     "outDir": "./build",
     "moduleResolution": "node",
     "rootDir": "./src",
     "resolveJsonModule": true,
+    "esModuleInterop": true,
     "downlevelIteration": true,
     "module": "CommonJS",
-    "esModuleInterop": true
+    "strict": true
   },
   "exclude": ["node_modules"],
-  "include": ["src/**/*.json", "src/**/*"],
+  "include": ["src/**/*.json", "src/**/*"]
 }
