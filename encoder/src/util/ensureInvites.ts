@@ -6,11 +6,16 @@ export default function ensureInvites(client: DiscordClient) {
   // Ensure that everyone is invited
   Array.from(client.getAllUsers().values()).forEach((user) => {
     // If the user is already invited, skip them
-    if (user.getLinkState() !== LINK_STATE.NOT_INVITED) return;
+    if (
+      user.getLinkState() !== LINK_STATE.NOT_INVITED ||
+      client.getLinkingPatreons().has(user.getDiscordMember().id)
+    ) return;
 
+    client.getLinkingPatreons().add(user.getDiscordMember().id);
     client.getQueue().add(async () => {
       const member = user.getDiscordMember();
       console.log(`Inviting ${member.displayName} (${member.id})...`);
+      client.getLinkingPatreons().delete(member.id);
 
       // Make sure the user's cached state is up to date
       await user.fetchState();

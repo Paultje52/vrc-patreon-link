@@ -12,6 +12,7 @@ export default class DiscordClient extends Client {
 
   private allUsers = new Map<string, User>();
   private queue = new Queue();
+  private linkingPatreons = new Set<string>();
   private patreonUploadString = "";
   private lastSync = 0;
 
@@ -72,6 +73,14 @@ export default class DiscordClient extends Client {
    */
   public getQueue(): Queue {
     return this.queue;
+  }
+
+  /**
+   * Get the last time the patreon upload string was synced
+   * @returns {Set<string>} A set of all patreons that are currently being linked
+   */
+  public getLinkingPatreons(): Set<string> {
+    return this.linkingPatreons;
   }
 
   /**
