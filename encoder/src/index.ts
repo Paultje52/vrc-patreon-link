@@ -26,6 +26,7 @@ const adminPanel = new AdminPanel(client, vrChatClient);
 
 // When the client is ready
 client.on("ready", async () => {
+  console.log(`VRC Patreon Link logged in as ${client.user?.tag}!`);
   // Fetch all users with a role
   const users = await client.fetchUsers();
   client.setAllUsers(users);
